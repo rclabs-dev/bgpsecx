@@ -55,7 +55,6 @@ import net.floodlightcontroller.debugcounter.IDebugCounter;
 import net.floodlightcontroller.debugcounter.IDebugCounterService;
 import net.floodlightcontroller.debugcounter.IDebugCounterService.MetaData;
 import net.floodlightcontroller.packet.Ethernet;
-import net.floodlightcontroller.packet.IPacket;
 import net.floodlightcontroller.packet.IPv4;
 import net.floodlightcontroller.packet.TCP;
 import net.floodlightcontroller.restserver.IRestApiService;
@@ -548,16 +547,14 @@ implements IFloodlightModule, ILearningSwitchService, IOFMessageListener, IOFSwi
 	        if (ipv4.getProtocol().equals(IpProtocol.TCP)) {
 	        	// Get TCP payload
 	            TCP tcp = (TCP) ipv4.getPayload();
-	            // Get BGP payload
-	            IPacket tcpPayload = tcp.getPayload();
 	            TransportPort srcPort = tcp.getSourcePort();
 	            TransportPort dstPort = tcp.getDestinationPort();
-	            if ((srcPort.equals(BGP_PORT)) | (dstPort.equals(BGP_PORT))) {
-	            	if (BGPSecHandle.processBGPPkt(tcpPayload, srcIP)) {
+	            if ((srcPort.equals(BGP_PORT)) || (dstPort.equals(BGP_PORT))) {
+	            	if (BGPSecHandle.processBGPPkt(tcp.getPayload().serialize(), srcIP)) {
 	            		// BGP Update is not malicious, process packet
 	            		return this.processPacketInMessage(sw, (OFPacketIn) msg, cntx);
 	                } else
-	                	// Have a problem with BGP Update
+	                	// Have a policy problem with the BGP message 
 	                	return Command.CONTINUE;
 	                }
 	    	    }

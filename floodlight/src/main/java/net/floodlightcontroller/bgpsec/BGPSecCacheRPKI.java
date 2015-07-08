@@ -21,7 +21,7 @@ public class BGPSecCacheRPKI {
 		long nowTime = System.currentTimeMillis();
 		if (LearningSwitch.cacheMap.size() == 0) { // Cache initialize 
 			LearningSwitch.cacheMap.put("TTL", new String[] {String.valueOf(nowTime), ""});
-			log.info("SecBGP: Cache TTL was initialized:" + LearningSwitch.cacheMap.size());
+			log.info("Cache TTL was initialized: " + LearningSwitch.cacheMap.size());
 			return false;
 	    } else { // Verify whether the cache is out of date. If yes, reinitialize.
 	    	String[] getTTL = LearningSwitch.cacheMap.get("TTL");
@@ -29,7 +29,7 @@ public class BGPSecCacheRPKI {
 	    	if (timeStamp > TTL) {
 	    		LearningSwitch.cacheMap.clear();
 	    		LearningSwitch.cacheMap.put("TTL", new String[] {String.valueOf(nowTime), ""});
-	    		log.info("SecBGP: Cache TTL was reinitialized.");
+	    		log.info("Cache TTL was REinitialized."+ LearningSwitch.cacheMap.size());
 	    		return false;
 	    	}
 	    }			
@@ -37,12 +37,20 @@ public class BGPSecCacheRPKI {
 		if (LearningSwitch.cacheMap.containsKey(prefix)){
 			String[] values = LearningSwitch.cacheMap.get(prefix);
 			// Verify NLRI routes
-			if (ip.equals("") && asn.equals(values[0]))
+			if (ip.equals("") && asn.equals(values[0])) {
+				log.info("Quering CACHE for NLRI (" + asn + "/" + prefix + 
+						 ")" + ", the result is true.");
 				return true;    
+			}
 			// Verify withdraw routes
-			if (asn.equals("") && ip.equals(values[1]))
+			if (asn.equals("") && ip.equals(values[1])) {
+				log.info("Quering CACHE for WITHDRAW ROUTES (" + asn + "/" 
+			             + prefix + ")" + ", the result is true.");
 				return true;   			
+			}
 		}
+		log.info("Quering in CACHE (" + asn + "/" 
+	             + prefix + ")" + ", the result is FALSE.");
 	    return false;
 	}
 	
@@ -55,8 +63,8 @@ public class BGPSecCacheRPKI {
 	 */
 	public static boolean setROAOnCache(String prefix, String asn, String ip) {
 		LearningSwitch.cacheMap.put(prefix, new String[] {asn, ip});
-		log.info("SecBGP: Add ROA " + asn + "/" + prefix + ", from Speaker " + 
-		                    ip + ", Cache size: " + LearningSwitch.cacheMap.size());
+		log.info("Adding new ROA " + asn + "/" + prefix + " in CACHE, from speaker " + 
+		                    ip + ", cache size: " + LearningSwitch.cacheMap.size());
 		return true;
 	}
 }

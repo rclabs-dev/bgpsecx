@@ -1,8 +1,10 @@
 package net.floodlightcontroller.bgpsec;
 
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -124,7 +126,6 @@ public class BGPSecUtils {
 	    final ByteBuffer buff = ByteBuffer.wrap(res);
 	    	return buff.getInt();
 	    }
-	    
 		
 	/**
 	 * Check if everything in the string is number
@@ -142,6 +143,7 @@ public class BGPSecUtils {
 		     int dstBegin) {
 		   System.arraycopy(source, srcBegin, destination, dstBegin, srcEnd - srcBegin);
 		 }
+	
 
 		 /**
 		  * Return a new byte array containing a sub-portion of the source array
@@ -154,10 +156,8 @@ public class BGPSecUtils {
 		  */
 		 public static byte[] subbytes(byte[] source, int srcBegin, int srcEnd) {
 		   byte destination[];
-
 		   destination = new byte[srcEnd - srcBegin];
 		   getBytes(source, srcBegin, srcEnd, destination, 0);
-
 		   return destination;
 		 }
 
@@ -223,5 +223,20 @@ public class BGPSecUtils {
 			 		e.printStackTrace();
 			 	}
 			return convAddr.getHostAddress().toString();
-		}		 
+		}		
+		
+		public static byte[] hexStrToByteArray(String s) {
+		    byte data[] = new byte[s.length()/2];
+		    for(int i=0;i < s.length();i+=2) {
+		        data[i/2] = (Integer.decode("0x"+s.charAt(i)+s.charAt(i+1))).byteValue();
+		    }
+		    return data;
+		}
+		
+		static public byte[] cloneArray(byte[] byteValue) {
+			    byte[] b = new byte[byteValue.length];
+			    System.arraycopy(byteValue, 0, b, 0, byteValue.length);
+			    return b;
+			  }
+		
 }

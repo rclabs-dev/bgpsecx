@@ -28,12 +28,15 @@ import org.slf4j.LoggerFactory;
 				// Check prefix in NLRI at RPKI Cache
 				if (!(BGPSecCacheRPKI.getROAOnCache(netPrefix, asn, ""))){
 				// Check prefix in RPKI Anchors database
-					if (!(getROAStatus(asnPrefix)))
+					if (!(getROAStatus(asnPrefix))) {
 						// Return false even whether at least of them is invalid
+						log.info("ASN/Prefix NOT EXIST in DATABASE: " + asnPrefix);
 						return false;
-					else
+					} else {
 						// Prefix found in RPKI database, add in RPKI Cache 
+						log.info("ASN/Prefix EXIST in DATABASE: " + asnPrefix);
 						BGPSecCacheRPKI.setROAOnCache(netPrefix, asn, speaker);
+					}
 				}
 				//	else
 						// Check withdraw prefixes on RPKI Cache

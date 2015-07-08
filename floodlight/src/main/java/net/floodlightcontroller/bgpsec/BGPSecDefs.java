@@ -2,8 +2,10 @@ package net.floodlightcontroller.bgpsec;
 
 import org.projectfloodlight.openflow.types.TransportPort;
 
+import com.google.common.base.Strings;
+
 public class BGPSecDefs {
-	
+	//BaseEncoding hex = BaseEncoding.base16();
 	public static final String[] MSG_TYPE = {"UNKNOWN", "OPEN", "UPDATE", "NOTIFICATION", "KEEPALIVE", "ROUTE-REFRESH"};
 	public static final int OPEN = 1;
 	public static final int UPDATE = 2;
@@ -22,6 +24,5 @@ public class BGPSecDefs {
     public static final TransportPort LISTEN_PORT = TransportPort.of(179);
     public static final int MIN_LENGTH_MSG = 19; 
     public static final int MAX_LENGTH_MSG = 4096;
-
-
+    public static final byte[] HEADER_MARKER = BGPSecUtils.hexStrToByteArray(Strings.repeat("ffff", 8));
 }
