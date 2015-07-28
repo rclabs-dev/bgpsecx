@@ -45,7 +45,6 @@ import net.floodlightcontroller.core.IOFMessageListener;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.IOFSwitchListener;
 import net.floodlightcontroller.core.PortChangeType;
-import net.floodlightcontroller.core.IListener.Command;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
@@ -97,12 +96,12 @@ import org.projectfloodlight.openflow.util.LRULinkedHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LearningSwitch implements IFloodlightModule,
+public class LearningSwitch_BGP_17Jul implements IFloodlightModule,
 		ILearningSwitchService, IOFMessageListener, IOFSwitchListener {
 	public static final TransportPort BGP_PORT = TransportPort.of(179);
 	// RPKI Cache
 	public static HashMap<String, String[]> cacheMap = new HashMap<String, String[]>();
-	protected static Logger log = LoggerFactory.getLogger(LearningSwitch.class);
+	protected static Logger log = LoggerFactory.getLogger(LearningSwitch_BGP_17Jul.class);
 	// Module dependencies
 	protected IFloodlightProviderService floodlightProviderService;
 	protected IRestApiService restApiService;
@@ -296,10 +295,10 @@ public class LearningSwitch implements IFloodlightModule,
 			fmb = sw.getOFFactory().buildFlowAdd();
 		}
 		fmb.setMatch(match);
-		fmb.setCookie((U64.of(LearningSwitch.LEARNING_SWITCH_COOKIE)));
-		fmb.setIdleTimeout(LearningSwitch.FLOWMOD_DEFAULT_IDLE_TIMEOUT);
-		fmb.setHardTimeout(LearningSwitch.FLOWMOD_DEFAULT_HARD_TIMEOUT);
-		fmb.setPriority(LearningSwitch.FLOWMOD_PRIORITY);
+		fmb.setCookie((U64.of(LearningSwitch_BGP_17Jul.LEARNING_SWITCH_COOKIE)));
+		fmb.setIdleTimeout(LearningSwitch_BGP_17Jul.FLOWMOD_DEFAULT_IDLE_TIMEOUT);
+		fmb.setHardTimeout(LearningSwitch_BGP_17Jul.FLOWMOD_DEFAULT_HARD_TIMEOUT);
+		fmb.setPriority(LearningSwitch_BGP_17Jul.FLOWMOD_PRIORITY);
 		fmb.setBufferId(bufferId);
 		fmb.setOutPort((command == OFFlowModCommand.DELETE) ? OFPort.ANY
 				: outPort);
@@ -585,7 +584,7 @@ public class LearningSwitch implements IFloodlightModule,
 	private Command processFlowRemovedMessage(IOFSwitch sw,
 			OFFlowRemoved flowRemovedMessage) {
 		if (!flowRemovedMessage.getCookie().equals(
-				U64.of(LearningSwitch.LEARNING_SWITCH_COOKIE))) {
+				U64.of(LearningSwitch_BGP_17Jul.LEARNING_SWITCH_COOKIE))) {
 			return Command.CONTINUE;
 		}
 		if (log.isTraceEnabled()) {
@@ -625,14 +624,12 @@ public class LearningSwitch implements IFloodlightModule,
 	public Command receive(IOFSwitch sw, OFMessage msg, FloodlightContext cntx) {
 		switch (msg.getType()) {
 		case PACKET_IN:
-			int byteFlag = -2;
 			Ethernet eth = IFloodlightProviderService.bcStore.get(cntx,
 					IFloodlightProviderService.CONTEXT_PI_PAYLOAD);
 			if (eth.getEtherType() == EthType.IPv4) {
 				// Get IPv4 payload
 				IPv4 ipv4 = (IPv4) eth.getPayload();
 				IPv4Address srcIP = ipv4.getSourceAddress();
-				IPv4Address dstIP = ipv4.getDestinationAddress();
 				if (ipv4.getProtocol().equals(IpProtocol.TCP)) {
 					// Get TCP payload
 					TCP tcp = (TCP) ipv4.getPayload();
@@ -642,105 +639,56 @@ public class LearningSwitch implements IFloodlightModule,
 							|| (dstPort.equals(BGP_PORT))) {
 						byte[] bgpResult = BGPSecHandle.processBGPPkt(tcp
 								.getPayload().serialize(), srcIP);
-						/*
-						 * Byte flasg are: 
-						 * 0: BGP update message is invalid 
-						 * 1: Default values, BGP message is valid and wasn't changed or is a unknown message 
-						 * 3: BGP update message had its payload changed
-						 */
-						
-						log.info("Message was returned from bgpResult: " + BGPSecUtils.bytesToHexString(bgpResult));
-						
-						byteFlag = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(
-								bgpResult, 0, 1));
-
-						log.info("Byte flag value (1): " + byteFlag);
+						int byteFlag = BGPSecUtils.bytesToInt(BGPSecUtils
+								.subByte(bgpResult, 0, 1));
 
 						// Have a policy problem with the BGP message
 						if (byteFlag == 0) {
-							return Command.STOP;
+							return Command.CONTINUE;
 						}
 
-						// There are a valid BGP Update message, but
-						// the packet was reconstructed. Need to make
-						// a new packet
-						if (byteFlag == 3) {
+						// There are a valid BGP Update message
+						if (byteFlag == 1) {
 							// Need to rewrite payload because at least one
 							// asn/prefix was invalidated
-							Data newTCPPayload = new Data(BGPSecUtils.subByte(
-									bgpResult, 1, bgpResult.length - 1));
-							// Data newTCPPayload = new Data(BGPSecDefs.FAKE);
-							log.info("newTCPPayload value: "
-									+ BGPSecUtils.bytesToHexString(newTCPPayload
-													.serialize()));
+							if (bgpResult.length > 1) {
+								Data newTCPPayload = new Data(
+										BGPSecUtils.subByte(bgpResult, 1,
+												bgpResult.length - 1));
+								log.info("newTCPPayload value: " + BGPSecUtils.bytesToHexString(newTCPPayload.serialize())); 
+								tcp.setPayload(newTCPPayload);
+								eth.setPayload(ipv4);
+								ipv4.setPayload(tcp);
+								byte[] serializedData = eth.serialize();
 
-							// Build a new packet where contains the new TCP
-							// payload and send it to swich
-							// The original packet-in is ignored by STOP return;
-							// The others information to
-							// build the new packet are taking from the original
-							// packet-in
-							Ethernet l2 = new Ethernet();
-							l2.setSourceMACAddress(eth.getSourceMACAddress());
-							l2.setDestinationMACAddress(eth
-									.getDestinationMACAddress());
-							l2.setEtherType(EthType.IPv4);
-							
-							
-							IPv4 l3 = new IPv4();
-							l3.setSourceAddress(srcIP);
-							l3.setDestinationAddress(dstIP);
-							// l3.setTtl(ipv4.getTtl()); // não implica
-							l3.setProtocol(IpProtocol.TCP);
-							l3.setFragmentOffset(ipv4.getFragmentOffset());							
-							l3.setFlags(ipv4.getFlags());
-							l3.setIdentification(ipv4.getIdentification());
-							
+								IFloodlightProviderService.bcStore
+										.put(cntx,
+												IFloodlightProviderService.CONTEXT_PI_PAYLOAD,
+												eth);
+								OFFactory factory = sw.getOFFactory();
+								OFActionOutput output = factory.actions()
+										.buildOutput().setPort(OFPort.FLOOD)
+										.build();
+								OFPacketOut packetOut = factory
+										.buildPacketOut()
+										.setData(eth.serialize())
+										.setBufferId(OFBufferId.NO_BUFFER)
+										.setActions(
+												Collections
+														.singletonList((OFAction) output))
+										.build();
+								sw.write(packetOut);
+								log.info("New BGP Packet was sent out to th switch with success");
+								return Command.CONTINUE;
+							} else {
+								return this.processPacketInMessage(sw,
+										(OFPacketIn) msg, cntx);
+							}
+						}
 
-							TCP l4 = new TCP();
-							l4.setSourcePort(srcPort);
-							l4.setDestinationPort(dstPort);
-							l4.setPayload(newTCPPayload);
-							l4.setFlags(tcp.getFlags());
-							l4.setSequence(tcp.getSequence());
-							l4.setWindowSize(tcp.getWindowSize());
-							l4.setAcknowledge(tcp.getAcknowledge());
-							l4.setOptions(tcp.getOptions()); 
-						
-							l2.setPayload(l3);
-							l3.setPayload(l4);
-
-							// Get context and send packet out
-							IFloodlightProviderService.bcStore
-									.put(cntx,
-											IFloodlightProviderService.CONTEXT_PI_PAYLOAD,
-											l2);
-							OFFactory factory = sw.getOFFactory();
-							OFActionOutput output = factory.actions()
-									.buildOutput().setPort(OFPort.FLOOD)
-									.build();
-							OFPacketOut packetOut = factory
-									.buildPacketOut()
-									.setData(l2.serialize())
-									.setBufferId(OFBufferId.NO_BUFFER)
-									.setActions(
-											Collections
-													.singletonList((OFAction) output))
-									.build();
-							sw.write(packetOut);
-							log.info("New BGP Packet was sent out to the switch with success");
-
-							// Ignore original packet without send to any
-							// pipeline
-							return Command.STOP;
-						} // if (byteFlag == 3)
-
-					} // if ((srcPort.equals(BGP_PORT)) ||
-						// (dstPort.equals(BGP_PORT)))
-				} // if (ipv4.getProtocol().equals(IpProtocol.TCP))
-			} // if (eth.getEtherType() == EthType.IPv4)
-
-			log.info("Byte flag value (2): " + byteFlag);
+					}
+				}
+			}
 			return this.processPacketInMessage(sw, (OFPacketIn) msg, cntx);
 
 		case FLOW_REMOVED:

@@ -10,7 +10,7 @@ public class BGPSecUpdateParser extends BGPSecDefs{
 	public static Hashtable<Integer, byte[]> msgParser (byte[] updateMsg) {
 		/* attrData keys contain:
 		 * 0: Total message length
-		 * 1: Withdrawn routes
+		 * 1: Withdrawn routes with length 
 		 * 2: ORIGIN type
 		 * 3: AS_PATH segment type
 		 * 4: First ASN in AS_PATH
@@ -18,6 +18,7 @@ public class BGPSecUpdateParser extends BGPSecDefs{
 		 * 6: Chain of the ASNs in AS_PATH
 		 * 7: NEXT_HOP
 		 * 8: NLRI
+		 * 9: Fully Total Path Attr. length  + Path Attr.
 		 */
 		Hashtable<Integer, byte[]> dataParsed = new Hashtable<Integer, byte[]>();
 		int decTmp, attrType, attrLen, totalASN;
@@ -26,6 +27,7 @@ public class BGPSecUpdateParser extends BGPSecDefs{
 		int totalAttr;
 		int countPos = 0;
 		int stepPos;
+		boolean thereNLRI = false;
 		
 		/* TOTAL LENGHT MESSAGE
 		 * Contain the total length of the message in bytes, including the fields of the header
@@ -55,10 +57,11 @@ public class BGPSecUpdateParser extends BGPSecDefs{
 		decTmp = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(updateMsg, 3, 2));
 		if (decTmp != 0) { // There are unfeasible routes
 			// Contains total list of withdrawn routes
-			dataParsed.put(1, BGPSecUtils.subByte(updateMsg, 5, decTmp));
+			dataParsed.put(1, BGPSecUtils.subByte(updateMsg, 3, decTmp + 2));
 			// Cut the msg until Total Path Attribute
 			updateMsg = BGPSecUtils.subByte(updateMsg, 5 + decTmp);
-			log.info("Message contains withdrawn/unfeasible Routes");
+			log.info("Message contains withdrawn/unfeasible Routes: " + 
+					BGPSecUtils.bytesToHexString(dataParsed.get(1)));
 		} else {
 			// Cut until Total Path Attribute
 			updateMsg = BGPSecUtils.subByte(updateMsg,5);
@@ -81,11 +84,16 @@ public class BGPSecUpdateParser extends BGPSecDefs{
 		// Get total path attribute lenght
 		totalAttr = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(updateMsg, 0, 2));
 		if (totalAttr != 0) {
+			// Store fully Total Path Attr. Length + Path Attr; the number 2 below
+			// is to includes the bytes of length of path attributes
+			dataParsed.put(9, BGPSecUtils.subByte(updateMsg, 0, totalAttr + 2));
+			log.info("Fully Total Path Attr.: " + BGPSecUtils.bytesToHexString(dataParsed.get(9)));
+			thereNLRI = true;
 			log.info("Total Path Attribute Lenght: "  + totalAttr + " bytes");
 			// Cut the msg until first Path Attribute
 			updateMsg = BGPSecUtils.subByte(updateMsg, 2);
 			while (countPos < totalAttr) {
-				// Otimizar expressão abaixo
+				// Need to optimize the expression below, yet.
 				decTmp = Integer.parseInt(BGPSecUtils.bitFlags(BGPSecUtils.bytesToHexString(BGPSecUtils.subByte(updateMsg, 0, 1))));
 				// Path Attribute length are one or two octects.
 				if (decTmp == 0)
@@ -174,7 +182,8 @@ public class BGPSecUpdateParser extends BGPSecDefs{
 				
 				}
 			}
-		    dataParsed.put(8, updateMsg);
-			return dataParsed;	
+		if (thereNLRI)
+			dataParsed.put(8, updateMsg);
+		return dataParsed;	
 		}
 }

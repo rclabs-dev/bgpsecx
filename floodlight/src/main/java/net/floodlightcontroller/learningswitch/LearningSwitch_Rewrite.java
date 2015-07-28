@@ -45,7 +45,6 @@ import net.floodlightcontroller.core.IOFMessageListener;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.core.IOFSwitchListener;
 import net.floodlightcontroller.core.PortChangeType;
-import net.floodlightcontroller.core.IListener.Command;
 import net.floodlightcontroller.core.internal.IOFSwitchService;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
@@ -97,12 +96,12 @@ import org.projectfloodlight.openflow.util.LRULinkedHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LearningSwitch implements IFloodlightModule,
-		ILearningSwitchService, IOFMessageListener, IOFSwitchListener {
-	public static final TransportPort BGP_PORT = TransportPort.of(179);
-	// RPKI Cache
-	public static HashMap<String, String[]> cacheMap = new HashMap<String, String[]>();
-	protected static Logger log = LoggerFactory.getLogger(LearningSwitch.class);
+public class LearningSwitch_Rewrite
+implements IFloodlightModule, ILearningSwitchService, IOFMessageListener, IOFSwitchListener {
+    public static final TransportPort BGP_PORT = TransportPort.of(179);
+    // RPKI Cache
+    public static HashMap<String, String[]> cacheMap = new HashMap<String, String[]>();
+	protected static Logger log = LoggerFactory.getLogger(LearningSwitch_Rewrite.class);
 	// Module dependencies
 	protected IFloodlightProviderService floodlightProviderService;
 	protected IRestApiService restApiService;
@@ -130,18 +129,15 @@ public class LearningSwitch implements IFloodlightModule,
 	protected static short FLOWMOD_PRIORITY = 100;
 
 	// for managing our map sizes
-	protected static final int MAX_MACS_PER_SWITCH = 1000;
+	protected static final int MAX_MACS_PER_SWITCH  = 1000;
 
-	// normally, setup reverse flow as well. Disable only for using cbench for
-	// comparison with NOX etc.
-	protected static final boolean LEARNING_SWITCH_REVERSE_FLOW = true;
+	// normally, setup reverse flow as well. Disable only for using cbench for comparison with NOX etc.
+	protected static final boolean LEARNING_SWITCH_REVERSE_FLOW = truffffffffffffffffffffffffffffffff003b020000001c400101005002000602010000022f400304ac1f01028004040000000018c1051618c10517e;
 
 	/**
-	 * @param floodlightProvider
-	 *            the floodlightProvider to set
+	 * @param floodlightProvider the floodlightProvider to set
 	 */
-	public void setFloodlightProvider(
-			IFloodlightProviderService floodlightProviderService) {
+	public void setFloodlightProvider(IFloodlightProviderService floodlightProviderService) {
 		this.floodlightProviderService = floodlightProviderService;
 	}
 
@@ -152,18 +148,12 @@ public class LearningSwitch implements IFloodlightModule,
 
 	/**
 	 * Adds a host to the MAC/VLAN->SwitchPort mapping
-	 * 
-	 * @param sw
-	 *            The switch to add the mapping to
-	 * @param mac
-	 *            The MAC address of the host to add
-	 * @param vlan
-	 *            The VLAN that the host is on
-	 * @param portVal
-	 *            The switchport that the host is on
+	 * @param sw The switch to add the mapping to
+	 * @param mac The MAC address of the host to add
+	 * @param vlan The VLAN that the host is on
+	 * @param portVal The switchport that the host is on
 	 */
-	protected void addToPortMap(IOFSwitch sw, MacAddress mac, VlanVid vlan,
-			OFPort portVal) {
+	protected void addToPortMap(IOFSwitch sw, MacAddress mac, VlanVid vlan, OFPort portVal) {
 		Map<MacVlanPair, OFPort> swMap = macVlanToSwitchPortMap.get(sw);
 
 		if (vlan == VlanVid.FULL_MASK || vlan == null) {
@@ -172,9 +162,7 @@ public class LearningSwitch implements IFloodlightModule,
 
 		if (swMap == null) {
 			// May be accessed by REST API so we need to make it thread safe
-			swMap = Collections
-					.synchronizedMap(new LRULinkedHashMap<MacVlanPair, OFPort>(
-							MAX_MACS_PER_SWITCH));
+			swMap = Collections.synchronizedMap(new LRULinkedHashMap<MacVlanPair, OFPort>(MAX_MACS_PER_SWITCH));
 			macVlanToSwitchPortMap.put(sw, swMap);
 		}
 		swMap.put(new MacVlanPair(mac, vlan), portVal);
@@ -182,13 +170,9 @@ public class LearningSwitch implements IFloodlightModule,
 
 	/**
 	 * Removes a host from the MAC/VLAN->SwitchPort mapping
-	 * 
-	 * @param sw
-	 *            The switch to remove the mapping from
-	 * @param mac
-	 *            The MAC address of the host to remove
-	 * @param vlan
-	 *            The VLAN that the host is on
+	 * @param sw The switch to remove the mapping from
+	 * @param mac The MAC address of the host to remove
+	 * @param vlan The VLAN that the host is on
 	 */
 	protected void removeFromPortMap(IOFSwitch sw, MacAddress mac, VlanVid vlan) {
 		if (vlan == VlanVid.FULL_MASK) {
@@ -203,13 +187,9 @@ public class LearningSwitch implements IFloodlightModule,
 
 	/**
 	 * Get the port that a MAC/VLAN pair is associated with
-	 * 
-	 * @param sw
-	 *            The switch to get the mapping from
-	 * @param mac
-	 *            The MAC address to get
-	 * @param vlan
-	 *            The VLAN number to get
+	 * @param sw The switch to get the mapping from
+	 * @param mac The MAC address to get
+	 * @param vlan The VLAN number to get
 	 * @return The port the host is on
 	 */
 	public OFPort getFromPortMap(IOFSwitch sw, MacAddress mac, VlanVid vlan) {
@@ -234,9 +214,7 @@ public class LearningSwitch implements IFloodlightModule,
 
 	/**
 	 * Clears the MAC/VLAN -> SwitchPort map for a single switch
-	 * 
-	 * @param sw
-	 *            The switch to clear the mapping for
+	 * @param sw The switch to clear the mapping for
 	 */
 	public void clearLearnedTable(IOFSwitch sw) {
 		Map<MacVlanPair, OFPort> swMap = macVlanToSwitchPortMap.get(sw);
@@ -252,42 +230,36 @@ public class LearningSwitch implements IFloodlightModule,
 
 	/**
 	 * Writes a OFFlowMod to a switch.
-	 * 
-	 * @param sw
-	 *            The switch tow rite the flowmod to.
-	 * @param command
-	 *            The FlowMod actions (add, delete, etc).
-	 * @param bufferId
-	 *            The buffer ID if the switch has buffered the packet.
-	 * @param match
-	 *            The OFMatch structure to write.
-	 * @param outPort
-	 *            The switch port to output it to.
+	 * @param sw The switch tow rite the flowmod to.
+	 * @param command The FlowMod actions (add, delete, etc).
+	 * @param bufferId The buffer ID if the switch has buffered the packet.
+	 * @param match The OFMatch structure to write.
+	 * @param outPort The switch port to output it to.
 	 */
-	private void writeFlowMod(IOFSwitch sw, OFFlowModCommand command,
-			OFBufferId bufferId, Match match, OFPort outPort) {
+	private void writeFlowMod(IOFSwitch sw, OFFlowModCommand command, OFBufferId bufferId,
+			Match match, OFPort outPort) {
 		// from openflow 1.0 spec - need to set these on a struct ofp_flow_mod:
 		// struct ofp_flow_mod {
-		// struct ofp_header header;
-		// struct ofp_match match; /* Fields to match */
-		// uint64_t cookie; /* Opaque controller-issued identifier. */
+		//    struct ofp_header header;
+		//    struct ofp_match match; /* Fields to match */
+		//    uint64_t cookie; /* Opaque controller-issued identifier. */
 		//
-		// /* Flow actions. */
-		// uint16_t command; /* One of OFPFC_*. */
-		// uint16_t idle_timeout; /* Idle time before discarding (seconds). */
-		// uint16_t hard_timeout; /* Max time before discarding (seconds). */
-		// uint16_t priority; /* Priority level of flow entry. */
-		// uint32_t buffer_id; /* Buffered packet to apply to (or -1).
-		// Not meaningful for OFPFC_DELETE*. */
-		// uint16_t out_port; /* For OFPFC_DELETE* commands, require
-		// matching entries to include this as an
-		// output port. A value of OFPP_NONE
-		// indicates no restriction. */
-		// uint16_t flags; /* One of OFPFF_*. */
-		// struct ofp_action_header actions[0]; /* The action length is inferred
-		// from the length field in the
-		// header. */
-		// };
+		//    /* Flow actions. */
+		//    uint16_t command; /* One of OFPFC_*. */
+		//    uint16_t idle_timeout; /* Idle time before discarding (seconds). */
+		//    uint16_t hard_timeout; /* Max time before discarding (seconds). */
+		//    uint16_t priority; /* Priority level of flow entry. */
+		//    uint32_t buffer_id; /* Buffered packet to apply to (or -1).
+		//                           Not meaningful for OFPFC_DELETE*. */
+		//    uint16_t out_port; /* For OFPFC_DELETE* commands, require
+		//                          matching entries to include this as an
+		//                          output port. A value of OFPP_NONE
+		//                          indicates no restriction. */
+		//    uint16_t flags; /* One of OFPFF_*. */
+		//    struct ofp_action_header actions[0]; /* The action length is inferred
+		//                                            from the length field in the
+		//                                            header. */
+		//    };
 
 		OFFlowMod.Builder fmb;
 		if (command == OFFlowModCommand.DELETE) {
@@ -296,22 +268,21 @@ public class LearningSwitch implements IFloodlightModule,
 			fmb = sw.getOFFactory().buildFlowAdd();
 		}
 		fmb.setMatch(match);
-		fmb.setCookie((U64.of(LearningSwitch.LEARNING_SWITCH_COOKIE)));
-		fmb.setIdleTimeout(LearningSwitch.FLOWMOD_DEFAULT_IDLE_TIMEOUT);
-		fmb.setHardTimeout(LearningSwitch.FLOWMOD_DEFAULT_HARD_TIMEOUT);
-		fmb.setPriority(LearningSwitch.FLOWMOD_PRIORITY);
+		fmb.setCookie((U64.of(LearningSwitch_Rewrite.LEARNING_SWITCH_COOKIE)));
+		fmb.setIdleTimeout(LearningSwitch_Rewrite.FLOWMOD_DEFAULT_IDLE_TIMEOUT);
+		fmb.setHardTimeout(LearningSwitch_Rewrite.FLOWMOD_DEFAULT_HARD_TIMEOUT);
+		fmb.setPriority(LearningSwitch_Rewrite.FLOWMOD_PRIORITY);
 		fmb.setBufferId(bufferId);
-		fmb.setOutPort((command == OFFlowModCommand.DELETE) ? OFPort.ANY
-				: outPort);
+		fmb.setOutPort((command == OFFlowModCommand.DELETE) ? OFPort.ANY : outPort);
 		Set<OFFlowModFlags> sfmf = new HashSet<OFFlowModFlags>();
 		if (command != OFFlowModCommand.DELETE) {
 			sfmf.add(OFFlowModFlags.SEND_FLOW_REM);
 		}
 		fmb.setFlags(sfmf);
 
+
 		// set the ofp_action_header/out actions:
-		// from the openflow 1.0 spec: need to set these on a struct
-		// ofp_action_output:
+			// from the openflow 1.0 spec: need to set these on a struct ofp_action_output:
 		// uint16_t type; /* OFPAT_OUTPUT. */
 		// uint16_t len; /* Length is 8. */
 		// uint16_t port; /* Output port. */
@@ -319,15 +290,12 @@ public class LearningSwitch implements IFloodlightModule,
 		// type/len are set because it is OFActionOutput,
 		// and port, max_len are arguments to this constructor
 		List<OFAction> al = new ArrayList<OFAction>();
-		al.add(sw.getOFFactory().actions().buildOutput().setPort(outPort)
-				.setMaxLen(0xffFFffFF).build());
+		al.add(sw.getOFFactory().actions().buildOutput().setPort(outPort).setMaxLen(0xffFFffFF).build());
 		fmb.setActions(al);
 
 		if (log.isTraceEnabled()) {
-			log.trace("{} {} flow mod {}", new Object[] {
-					sw,
-					(command == OFFlowModCommand.DELETE) ? "deleting"
-							: "adding", fmb.build() });
+			log.trace("{} {} flow mod {}",
+					new Object[]{ sw, (command == OFFlowModCommand.DELETE) ? "deleting" : "adding", fmb.build() });
 		}
 
 		counterFlowMod.increment();
@@ -337,62 +305,52 @@ public class LearningSwitch implements IFloodlightModule,
 	}
 
 	/**
-	 * Pushes a packet-out to a switch. The assumption here is that the
-	 * packet-in was also generated from the same switch. Thus, if the input
+	 * Pushes a packet-out to a switch.  The assumption here is that
+	 * the packet-in was also generated from the same switch.  Thus, if the input
 	 * port of the packet-in and the outport are the same, the function will not
 	 * push the packet-out.
-	 * 
-	 * @param sw
-	 *            switch that generated the packet-in, and from which packet-out
-	 *            is sent
-	 * @param match
-	 *            OFmatch
-	 * @param pi
-	 *            packet-in
-	 * @param outport
-	 *            output port
+	 * @param sw        switch that generated the packet-in, and from which packet-out is sent
+	 * @param match     OFmatch
+	 * @param pi        packet-in
+	 * @param outport   output port
 	 */
-	private void pushPacket(IOFSwitch sw, Match match, OFPacketIn pi,
-			OFPort outport) {
+	private void pushPacket(IOFSwitch sw, Match match, OFPacketIn pi, OFPort outport) {
 		if (pi == null) {
 			return;
 		}
 
-		OFPort inPort = (pi.getVersion().compareTo(OFVersion.OF_12) < 0 ? pi
-				.getInPort() : pi.getMatch().get(MatchField.IN_PORT));
+		OFPort inPort = (pi.getVersion().compareTo(OFVersion.OF_12) < 0 ? pi.getInPort() : pi.getMatch().get(MatchField.IN_PORT));
 
 		// The assumption here is (sw) is the switch that generated the
 		// packet-in. If the input port is the same as output port, then
 		// the packet-out should be ignored.
 		if (inPort.equals(outport)) {
 			if (log.isDebugEnabled()) {
-				log.debug("Attempting to do packet-out to the same "
-						+ "interface as packet-in. Dropping packet. "
-						+ " SrcSwitch={}, match = {}, pi={}", new Object[] {
-						sw, match, pi });
+				log.debug("Attempting to do packet-out to the same " +
+						"interface as packet-in. Dropping packet. " +
+						" SrcSwitch={}, match = {}, pi={}",
+						new Object[]{sw, match, pi});
 				return;
 			}
 		}
 
 		if (log.isTraceEnabled()) {
-			log.trace("PacketOut srcSwitch={} match={} pi={}", new Object[] {
-					sw, match, pi });
+			log.trace("PacketOut srcSwitch={} match={} pi={}",
+					new Object[] {sw, match, pi});
 		}
 
 		OFPacketOut.Builder pob = sw.getOFFactory().buildPacketOut();
 
 		// set actions
 		List<OFAction> actions = new ArrayList<OFAction>();
-		actions.add(sw.getOFFactory().actions().buildOutput().setPort(outport)
-				.setMaxLen(0xffFFffFF).build());
+		actions.add(sw.getOFFactory().actions().buildOutput().setPort(outport).setMaxLen(0xffFFffFF).build());
 
 		pob.setActions(actions);
 
 		// If the switch doens't support buffering set the buffer id to be none
 		// otherwise it'll be the the buffer id of the PacketIn
 		if (sw.getBuffers() == 0) {
-			// We set the PI buffer id here so we don't have to check again
-			// below
+			// We set the PI buffer id here so we don't have to check again below
 			pi = pi.createBuilder().setBufferId(OFBufferId.NO_BUFFER).build();
 			pob.setBufferId(OFBufferId.NO_BUFFER);
 		} else {
@@ -414,28 +372,20 @@ public class LearningSwitch implements IFloodlightModule,
 
 	/**
 	 * Writes an OFPacketOut message to a switch.
-	 * 
-	 * @param sw
-	 *            The switch to write the PacketOut to.
-	 * @param packetInMessage
-	 *            The corresponding PacketIn.
-	 * @param egressPort
-	 *            The switchport to output the PacketOut.
+	 * @param sw The switch to write the PacketOut to.
+	 * @param packetInMessage The corresponding PacketIn.
+	 * @param egressPort The switchport to output the PacketOut.
 	 */
-	private void writePacketOutForPacketIn(IOFSwitch sw,
-			OFPacketIn packetInMessage, OFPort egressPort) {
+	private void writePacketOutForPacketIn(IOFSwitch sw, OFPacketIn packetInMessage, OFPort egressPort) {
 		OFPacketOut.Builder pob = sw.getOFFactory().buildPacketOut();
 
 		// Set buffer_id, in_port, actions_len
 		pob.setBufferId(packetInMessage.getBufferId());
-		pob.setInPort(packetInMessage.getVersion().compareTo(OFVersion.OF_12) < 0 ? packetInMessage
-				.getInPort() : packetInMessage.getMatch().get(
-				MatchField.IN_PORT));
+		pob.setInPort(packetInMessage.getVersion().compareTo(OFVersion.OF_12) < 0 ? packetInMessage.getInPort() : packetInMessage.getMatch().get(MatchField.IN_PORT));
 
 		// set actions
 		List<OFAction> actions = new ArrayList<OFAction>(1);
-		actions.add(sw.getOFFactory().actions().buildOutput()
-				.setPort(egressPort).setMaxLen(0xffFFffFF).build());
+		actions.add(sw.getOFFactory().actions().buildOutput().setPort(egressPort).setMaxLen(0xffFFffFF).build());
 		pob.setActions(actions);
 
 		// set data - only if buffer_id == -1
@@ -450,20 +400,18 @@ public class LearningSwitch implements IFloodlightModule,
 
 	}
 
-	protected Match createMatchFromPacket(IOFSwitch sw, OFPort inPort,
-			FloodlightContext cntx) {
+	protected Match createMatchFromPacket(IOFSwitch sw, OFPort inPort, FloodlightContext cntx) {
 		// The packet in match will only contain the port number.
 		// We need to add in specifics for the hosts we're routing between.
-		Ethernet eth = IFloodlightProviderService.bcStore.get(cntx,
-				IFloodlightProviderService.CONTEXT_PI_PAYLOAD);
+		Ethernet eth = IFloodlightProviderService.bcStore.get(cntx, IFloodlightProviderService.CONTEXT_PI_PAYLOAD);
 		VlanVid vlan = VlanVid.ofVlan(eth.getVlanID());
 		MacAddress srcMac = eth.getSourceMACAddress();
 		MacAddress dstMac = eth.getDestinationMACAddress();
 
 		Match.Builder mb = sw.getOFFactory().buildMatch();
 		mb.setExact(MatchField.IN_PORT, inPort)
-				.setExact(MatchField.ETH_SRC, srcMac)
-				.setExact(MatchField.ETH_DST, dstMac);
+		.setExact(MatchField.ETH_SRC, srcMac)
+		.setExact(MatchField.ETH_DST, dstMac);
 
 		if (!vlan.equals(VlanVid.ZERO)) {
 			mb.setExact(MatchField.VLAN_VID, OFVlanVidMatch.ofVlanVid(vlan));
@@ -473,26 +421,22 @@ public class LearningSwitch implements IFloodlightModule,
 	}
 
 	/**
-	 * Processes a OFPacketIn message. If the switch has learned the MAC/VLAN to
-	 * port mapping for the pair it will write a FlowMod for. If the mapping has
-	 * not been learned the we will flood the packet.
-	 * 
+	 * Processes a OFPacketIn message. If the switch has learned the MAC/VLAN to port mapping
+	 * for the pair it will write a FlowMod for. If the mapping has not been learned the
+	 * we will flood the packet.
 	 * @param sw
 	 * @param pi
 	 * @param cntx
 	 * @return
 	 */
-	private Command processPacketInMessage(IOFSwitch sw, OFPacketIn pi,
-			FloodlightContext cntx) {
-		OFPort inPort = (pi.getVersion().compareTo(OFVersion.OF_12) < 0 ? pi
-				.getInPort() : pi.getMatch().get(MatchField.IN_PORT));
+	private Command processPacketInMessage(IOFSwitch sw, OFPacketIn pi, FloodlightContext cntx) {
+		OFPort inPort = (pi.getVersion().compareTo(OFVersion.OF_12) < 0 ? pi.getInPort() : pi.getMatch().get(MatchField.IN_PORT));
 
 		/* Read packet header attributes into Match */
 		Match m = createMatchFromPacket(sw, inPort, cntx);
 		MacAddress sourceMac = m.get(MatchField.ETH_SRC);
 		MacAddress destMac = m.get(MatchField.ETH_DST);
-		VlanVid vlan = m.get(MatchField.VLAN_VID) == null ? VlanVid.ZERO : m
-				.get(MatchField.VLAN_VID).getVlanVid();
+		VlanVid vlan = m.get(MatchField.VLAN_VID) == null ? VlanVid.ZERO : m.get(MatchField.VLAN_VID).getVlanVid();
 
 		if (sourceMac == null) {
 			sourceMac = MacAddress.NONE;
@@ -506,15 +450,13 @@ public class LearningSwitch implements IFloodlightModule,
 
 		if ((destMac.getLong() & 0xfffffffffff0L) == 0x0180c2000000L) {
 			if (log.isTraceEnabled()) {
-				log.trace(
-						"ignoring packet addressed to 802.1D/Q reserved addr: switch {} vlan {} dest MAC {}",
-						new Object[] { sw, vlan, destMac.toString() });
+				log.trace("ignoring packet addressed to 802.1D/Q reserved addr: switch {} vlan {} dest MAC {}",
+						new Object[]{ sw, vlan, destMac.toString() });
 			}
 			return Command.STOP;
 		}
 		if ((sourceMac.getLong() & 0x010000000000L) == 0) {
-			// If source MAC is a unicast address, learn the port for this
-			// MAC/VLAN
+			// If source MAC is a unicast address, learn the port for this MAC/VLAN
 			this.addToPortMap(sw, sourceMac, vlan, inPort);
 		}
 
@@ -523,249 +465,207 @@ public class LearningSwitch implements IFloodlightModule,
 		if (outPort == null) {
 			// If we haven't learned the port for the dest MAC/VLAN, flood it
 			// Don't flood broadcast packets if the broadcast is disabled.
-			// XXX For LearningSwitch this doesn't do much. The sourceMac is
-			// removed
-			// from port map whenever a flow expires, so you would still see
-			// a lot of floods.
+			// XXX For LearningSwitch this doesn't do much. The sourceMac is removed
+			//     from port map whenever a flow expires, so you would still see
+			//     a lot of floods.
 			this.writePacketOutForPacketIn(sw, pi, OFPort.FLOOD);
 		} else if (outPort.equals(inPort)) {
-			log.trace(
-					"ignoring packet that arrived on same port as learned destination:"
-							+ " switch {} vlan {} dest MAC {} port {}",
-					new Object[] { sw, vlan, destMac.toString(),
-							outPort.getPortNumber() });
+			log.trace("ignoring packet that arrived on same port as learned destination:"
+					+ " switch {} vlan {} dest MAC {} port {}",
+					new Object[]{ sw, vlan, destMac.toString(), outPort.getPortNumber() });
 		} else {
-			// Add flow table entry matching source MAC, dest MAC, VLAN and
-			// input port
-			// that sends to the port we previously learned for the dest
-			// MAC/VLAN. Also
-			// add a flow table entry with source and destination MACs reversed,
-			// and
-			// input and output ports reversed. When either entry expires due to
-			// idle
-			// timeout, remove the other one. This ensures that if a device
-			// moves to
-			// a different port, a constant stream of packets headed to the
-			// device at
+			// Add flow table entry matching source MAC, dest MAC, VLAN and input port
+			// that sends to the port we previously learned for the dest MAC/VLAN.  Also
+			// add a flow table entry with source and destination MACs reversed, and
+			// input and output ports reversed.  When either entry expires due to idle
+			// timeout, remove the other one.  This ensures that if a device moves to
+			// a different port, a constant stream of packets headed to the device at
 			// its former location does not keep the stale entry alive forever.
-			// FIXME: current HP switches ignore DL_SRC and DL_DST fields, so we
-			// have to match on
+			// FIXME: current HP switches ignore DL_SRC and DL_DST fields, so we have to match on
 			// NW_SRC and NW_DST as well
-			// We write FlowMods with Buffer ID none then explicitly PacketOut
-			// the buffered packet
+			// We write FlowMods with Buffer ID none then explicitly PacketOut the buffered packet
 			this.pushPacket(sw, m, pi, outPort);
-			this.writeFlowMod(sw, OFFlowModCommand.ADD, OFBufferId.NO_BUFFER,
-					m, outPort);
+			this.writeFlowMod(sw, OFFlowModCommand.ADD, OFBufferId.NO_BUFFER, m, outPort);
 			if (LEARNING_SWITCH_REVERSE_FLOW) {
 				Match.Builder mb = m.createBuilder();
-				mb.setExact(MatchField.ETH_SRC, m.get(MatchField.ETH_DST))
-						.setExact(MatchField.ETH_DST, m.get(MatchField.ETH_SRC))
-						.setExact(MatchField.IN_PORT, outPort);
+				mb.setExact(MatchField.ETH_SRC, m.get(MatchField.ETH_DST))                         
+				.setExact(MatchField.ETH_DST, m.get(MatchField.ETH_SRC))     
+				.setExact(MatchField.IN_PORT, outPort);
 				if (m.get(MatchField.VLAN_VID) != null) {
 					mb.setExact(MatchField.VLAN_VID, m.get(MatchField.VLAN_VID));
 				}
 
-				this.writeFlowMod(sw, OFFlowModCommand.ADD,
-						OFBufferId.NO_BUFFER, mb.build(), inPort);
+				this.writeFlowMod(sw, OFFlowModCommand.ADD, OFBufferId.NO_BUFFER, mb.build(), inPort);
 			}
 		}
 		return Command.CONTINUE;
 	}
 
 	/**
-	 * Processes a flow removed message. We will delete the learned MAC/VLAN
-	 * mapping from the switch's table.
-	 * 
-	 * @param sw
-	 *            The switch that sent the flow removed message.
-	 * @param flowRemovedMessage
-	 *            The flow removed message.
+	 * Processes a flow removed message. We will delete the learned MAC/VLAN mapping from
+	 * the switch's table.
+	 * @param sw The switch that sent the flow removed message.
+	 * @param flowRemovedMessage The flow removed message.
 	 * @return Whether to continue processing this message or stop.
 	 */
-	private Command processFlowRemovedMessage(IOFSwitch sw,
-			OFFlowRemoved flowRemovedMessage) {
-		if (!flowRemovedMessage.getCookie().equals(
-				U64.of(LearningSwitch.LEARNING_SWITCH_COOKIE))) {
+	private Command processFlowRemovedMessage(IOFSwitch sw, OFFlowRemoved flowRemovedMessage) {
+		if (!flowRemovedMessage.getCookie().equals(U64.of(LearningSwitch_Rewrite.LEARNING_SWITCH_COOKIE))) {
 			return Command.CONTINUE;
 		}
 		if (log.isTraceEnabled()) {
 			log.trace("{} flow entry removed {}", sw, flowRemovedMessage);
 		}
 		Match match = flowRemovedMessage.getMatch();
-		// When a flow entry expires, it means the device with the matching
-		// source
-		// MAC address and VLAN either stopped sending packets or moved to a
-		// different
-		// port. If the device moved, we can't know where it went until it sends
-		// another packet, allowing us to re-learn its port. Meanwhile we remove
-		// it from the macVlanToPortMap to revert to flooding packets to this
-		// device.
-		this.removeFromPortMap(sw, match.get(MatchField.ETH_SRC),
-				match.get(MatchField.VLAN_VID) == null ? VlanVid.ZERO : match
-						.get(MatchField.VLAN_VID).getVlanVid());
+		// When a flow entry expires, it means the device with the matching source
+		// MAC address and VLAN either stopped sending packets or moved to a different
+		// port.  If the device moved, we can't know where it went until it sends
+		// another packet, allowing us to re-learn its port.  Meanwhile we remove
+		// it from the macVlanToPortMap to revert to flooding packets to this device.
+		this.removeFromPortMap(sw, match.get(MatchField.ETH_SRC), 
+				match.get(MatchField.VLAN_VID) == null 
+				? VlanVid.ZERO 
+				: match.get(MatchField.VLAN_VID).getVlanVid());
 
-		// Also, if packets keep coming from another device (e.g. from ping),
-		// the
-		// corresponding reverse flow entry will never expire on its own and
-		// will
+		// Also, if packets keep coming from another device (e.g. from ping), the
+		// corresponding reverse flow entry will never expire on its own and will
 		// send the packets to the wrong port (the matching input port of the
 		// expired flow entry), so we must delete the reverse entry explicitly.
 		Match.Builder mb = sw.getOFFactory().buildMatch();
-		mb.setExact(MatchField.ETH_SRC, match.get(MatchField.ETH_DST))
-				.setExact(MatchField.ETH_DST, match.get(MatchField.ETH_SRC));
+		mb.setExact(MatchField.ETH_SRC, match.get(MatchField.ETH_DST))                         
+		.setExact(MatchField.ETH_DST, match.get(MatchField.ETH_SRC));
 		if (match.get(MatchField.VLAN_VID) != null) {
-			mb.setExact(MatchField.VLAN_VID, match.get(MatchField.VLAN_VID));
+			mb.setExact(MatchField.VLAN_VID, match.get(MatchField.VLAN_VID));                    
 		}
-		this.writeFlowMod(sw, OFFlowModCommand.DELETE, OFBufferId.NO_BUFFER,
-				mb.build(), match.get(MatchField.IN_PORT));
+		this.writeFlowMod(sw, OFFlowModCommand.DELETE, OFBufferId.NO_BUFFER, mb.build(), match.get(MatchField.IN_PORT));
 		return Command.CONTINUE;
 	}
+	
 
 	@Override
 	public Command receive(IOFSwitch sw, OFMessage msg, FloodlightContext cntx) {
 		switch (msg.getType()) {
 		case PACKET_IN:
-			int byteFlag = -2;
-			Ethernet eth = IFloodlightProviderService.bcStore.get(cntx,
-					IFloodlightProviderService.CONTEXT_PI_PAYLOAD);
-			if (eth.getEtherType() == EthType.IPv4) {
-				// Get IPv4 payload
-				IPv4 ipv4 = (IPv4) eth.getPayload();
-				IPv4Address srcIP = ipv4.getSourceAddress();
-				IPv4Address dstIP = ipv4.getDestinationAddress();
-				if (ipv4.getProtocol().equals(IpProtocol.TCP)) {
-					// Get TCP payload
-					TCP tcp = (TCP) ipv4.getPayload();
-					TransportPort srcPort = tcp.getSourcePort();
-					TransportPort dstPort = tcp.getDestinationPort();
-					if ((srcPort.equals(BGP_PORT))
-							|| (dstPort.equals(BGP_PORT))) {
-						byte[] bgpResult = BGPSecHandle.processBGPPkt(tcp
-								.getPayload().serialize(), srcIP);
-						/*
-						 * Byte flasg are: 
-						 * 0: BGP update message is invalid 
-						 * 1: Default values, BGP message is valid and wasn't changed or is a unknown message 
-						 * 3: BGP update message had its payload changed
-						 */
-						
-						log.info("Message was returned from bgpResult: " + BGPSecUtils.bytesToHexString(bgpResult));
-						
-						byteFlag = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(
-								bgpResult, 0, 1));
+			Ethernet eth = IFloodlightProviderService.bcStore.get(cntx, IFloodlightProviderService.CONTEXT_PI_PAYLOAD);
+	        if (eth.getEtherType() == EthType.IPv4) {
+	        	// Get IPv4 payload
+	        	IPv4 ipv4 = (IPv4) eth.getPayload();
+	        	IPv4Address srcIP = ipv4.getSourceAddress();
+	        	if (ipv4.getProtocol().equals(IpProtocol.TCP)) {
+	        		// Get TCP payload
+	        		TCP tcp = (TCP) ipv4.getPayload();
+	        		TransportPort srcPort = tcp.getSourcePort();
+	        		TransportPort dstPort = tcp.getDestinationPort();
+	        		if ((srcPort.equals(BGP_PORT)) || (dstPort.equals(BGP_PORT))) {
+	        			//**************
+	
+	        			Data pay1 = (Data) tcp.getPayload();
+	        			byte[] pay = pay1.getData();
+	        			
+	        			if (pay.length != 0) {
+	        				if (srcIP.toString().equals("172.31.1.2")) {
+	        					log.info("PAYLOAD: " + BGPSecUtils.bytesToHexString(pay));
+	        					if (BGPSecUtils.bytesToInt(BGPSecUtils.subByte(pay, 18, 1)) == 2) {
+	        						log.info("UPDATE MESSAGE1: " + BGPSecUtils.bytesToHexString(pay));
+	        						
+	        						Data newpay = new Data(BGPSecDefs.FAKE); // is a byte array
+	        						
+	        						//log.info("UPDATE MESSAGE2: " + BGPSecUtils.bytesToHexString(BGPSecDefs.FAKE));
+	        						
+										tcp.setPayload(newpay);
+										
+										//log.info("UPDATE MESSAGE2: " + BGPSecUtils.bytesToHexString(tcp.getPayload().serialize()));
+										
+										eth.setPayload(ipv4);
+										ipv4.setPayload(tcp);
+										byte[] serializedData = eth.serialize();
+										
+										/*OFPacketOut po = sw.getOFFactory().buildPacketOut() 
+											    .setPayload(serializedData)
+											    .setActions(Collections.singletonList((OFAction) sw.getOFFactory().actions().output(OFPort.FLOOD, 0xffFFffFF)))
+											    .setInPort(OFPort.CONTROLLER)
+											    .build();
+											 
+											sw.write(po);*/
+										
+										
+										IFloodlightProviderService.bcStore.put(cntx,
+												IFloodlightProviderService.CONTEXT_PI_PAYLOAD,
+												eth);
 
-						log.info("Byte flag value (1): " + byteFlag);
+										OFFactory myFactory = sw.getOFFactory();
+										
+										/*OFActionOutput output = actions.buildOutput()
+												.setPort(OFPort.CONTROLLER)
+											        .setMaxLen(0xffFFffFF)
+											        .build();*/
+										
+										OFActionOutput output = myFactory.actions()
+												.buildOutput().setPort(OFPort.FLOOD).build();
+										OFPacketOut myPacketOut = myFactory
+												.buildPacketOut()
+												.setData(eth.serialize())
+												.setBufferId(OFBufferId.NO_BUFFER)
+												.setActions(
+														Collections
+																.singletonList((OFAction) output))
+												.build();
 
-						// Have a policy problem with the BGP message
-						if (byteFlag == 0) {
-							return Command.STOP;
-						}
-
-						// There are a valid BGP Update message, but
-						// the packet was reconstructed. Need to make
-						// a new packet
-						if (byteFlag == 3) {
-							// Need to rewrite payload because at least one
-							// asn/prefix was invalidated
-							Data newTCPPayload = new Data(BGPSecUtils.subByte(
-									bgpResult, 1, bgpResult.length - 1));
-							// Data newTCPPayload = new Data(BGPSecDefs.FAKE);
-							log.info("newTCPPayload value: "
-									+ BGPSecUtils.bytesToHexString(newTCPPayload
-													.serialize()));
-
-							// Build a new packet where contains the new TCP
-							// payload and send it to swich
-							// The original packet-in is ignored by STOP return;
-							// The others information to
-							// build the new packet are taking from the original
-							// packet-in
-							Ethernet l2 = new Ethernet();
-							l2.setSourceMACAddress(eth.getSourceMACAddress());
-							l2.setDestinationMACAddress(eth
-									.getDestinationMACAddress());
-							l2.setEtherType(EthType.IPv4);
-							
-							
-							IPv4 l3 = new IPv4();
-							l3.setSourceAddress(srcIP);
-							l3.setDestinationAddress(dstIP);
-							// l3.setTtl(ipv4.getTtl()); // não implica
-							l3.setProtocol(IpProtocol.TCP);
-							l3.setFragmentOffset(ipv4.getFragmentOffset());							
-							l3.setFlags(ipv4.getFlags());
-							l3.setIdentification(ipv4.getIdentification());
-							
-
-							TCP l4 = new TCP();
-							l4.setSourcePort(srcPort);
-							l4.setDestinationPort(dstPort);
-							l4.setPayload(newTCPPayload);
-							l4.setFlags(tcp.getFlags());
-							l4.setSequence(tcp.getSequence());
-							l4.setWindowSize(tcp.getWindowSize());
-							l4.setAcknowledge(tcp.getAcknowledge());
-							l4.setOptions(tcp.getOptions()); 
-						
-							l2.setPayload(l3);
-							l3.setPayload(l4);
-
-							// Get context and send packet out
-							IFloodlightProviderService.bcStore
-									.put(cntx,
-											IFloodlightProviderService.CONTEXT_PI_PAYLOAD,
-											l2);
-							OFFactory factory = sw.getOFFactory();
-							OFActionOutput output = factory.actions()
-									.buildOutput().setPort(OFPort.FLOOD)
-									.build();
-							OFPacketOut packetOut = factory
-									.buildPacketOut()
-									.setData(l2.serialize())
-									.setBufferId(OFBufferId.NO_BUFFER)
-									.setActions(
-											Collections
-													.singletonList((OFAction) output))
-									.build();
-							sw.write(packetOut);
-							log.info("New BGP Packet was sent out to the switch with success");
-
-							// Ignore original packet without send to any
-							// pipeline
-							return Command.STOP;
-						} // if (byteFlag == 3)
-
-					} // if ((srcPort.equals(BGP_PORT)) ||
-						// (dstPort.equals(BGP_PORT)))
-				} // if (ipv4.getProtocol().equals(IpProtocol.TCP))
-			} // if (eth.getEtherType() == EthType.IPv4)
-
-			log.info("Byte flag value (2): " + byteFlag);
-			return this.processPacketInMessage(sw, (OFPacketIn) msg, cntx);
-
+										sw.write(myPacketOut);										
+										
+										
+									
+	        					}
+	        				
+	        				}
+	        					
+	        			}
+	        				
+	        				
+	        		
+	        			
+	        			//**************
+	        			
+	        			/*if (BGPSecHandle.processBGPPkt(tcp.getPayload().serialize(), srcIP)) {
+	        				// BGP Update is not malicious, process packet
+	        				return this.processPacketInMessage(sw, (OFPacketIn) msg, cntx);
+	        			} else {
+	        				// Have a policy problem with the BGP message 
+	        				return Command.CONTINUE;
+	        			}*/
+	        		}
+	    	    }
+	        }			
+	        return this.processPacketInMessage(sw, (OFPacketIn) msg, cntx);
+					
 		case FLOW_REMOVED:
 			return this.processFlowRemovedMessage(sw, (OFFlowRemoved) msg);
 		case ERROR:
 			log.info("received an error {} from switch {}", msg, sw);
 			return Command.CONTINUE;
 		default:
-			log.error("received an unexpected message {} from switch {}", msg,
-					sw);
+			log.error("received an unexpected message {} from switch {}", msg, sw);
 			return Command.CONTINUE;
 		}
 	}
 
-	/*
-	 * @Override public Command receive(IOFSwitch sw, OFMessage msg,
-	 * FloodlightContext cntx) { switch (msg.getType()) { case PACKET_IN: return
-	 * this.processPacketInMessage(sw, (OFPacketIn) msg, cntx); case
-	 * FLOW_REMOVED: return this.processFlowRemovedMessage(sw, (OFFlowRemoved)
-	 * msg); case ERROR: log.info("received an error {} from switch {}", msg,
-	 * sw); return Command.CONTINUE; default:
-	 * log.error("received an unexpected message {} from switch {}", msg, sw);
-	 * return Command.CONTINUE; } }
-	 */
-
+/*	
+	@Override
+	public Command receive(IOFSwitch sw, OFMessage msg, FloodlightContext cntx) {
+		switch (msg.getType()) {
+		case PACKET_IN:
+			return this.processPacketInMessage(sw, (OFPacketIn) msg, cntx);
+		case FLOW_REMOVED:
+			return this.processFlowRemovedMessage(sw, (OFFlowRemoved) msg);
+		case ERROR:
+			log.info("received an error {} from switch {}", msg, sw);
+			return Command.CONTINUE;
+		default:
+			log.error("received an unexpected message {} from switch {}", msg, sw);
+			return Command.CONTINUE;
+		}
+	}
+*/	
+	
 	@Override
 	public boolean isCallbackOrderingPrereq(OFType type, String name) {
 		return false;
@@ -780,47 +680,48 @@ public class LearningSwitch implements IFloodlightModule,
 
 	@Override
 	public Collection<Class<? extends IFloodlightService>> getModuleServices() {
-		Collection<Class<? extends IFloodlightService>> l = new ArrayList<Class<? extends IFloodlightService>>();
+		Collection<Class<? extends IFloodlightService>> l =
+				new ArrayList<Class<? extends IFloodlightService>>();
 		l.add(ILearningSwitchService.class);
 		return l;
 	}
 
 	@Override
 	public Map<Class<? extends IFloodlightService>, IFloodlightService> getServiceImpls() {
-		Map<Class<? extends IFloodlightService>, IFloodlightService> m = new HashMap<Class<? extends IFloodlightService>, IFloodlightService>();
+		Map<Class<? extends IFloodlightService>,  IFloodlightService> m = 
+				new HashMap<Class<? extends IFloodlightService>, IFloodlightService>();
 		m.put(ILearningSwitchService.class, this);
 		return m;
 	}
 
 	@Override
 	public Collection<Class<? extends IFloodlightService>> getModuleDependencies() {
-		Collection<Class<? extends IFloodlightService>> l = new ArrayList<Class<? extends IFloodlightService>>();
+		Collection<Class<? extends IFloodlightService>> l =
+				new ArrayList<Class<? extends IFloodlightService>>();
 		l.add(IFloodlightProviderService.class);
 		l.add(IDebugCounterService.class);
 		l.add(IRestApiService.class);
 		l.add(IStaticFlowEntryPusherService.class);
-		l.add(IOFSwitchService.class);
+		l.add(IOFSwitchService.class);		
 		return l;
 	}
+	
 
 	@Override
-	public void init(FloodlightModuleContext context)
-			throws FloodlightModuleException {
+	public void init(FloodlightModuleContext context) throws FloodlightModuleException {
 		macVlanToSwitchPortMap = new ConcurrentHashMap<IOFSwitch, Map<MacVlanPair, OFPort>>();
-		floodlightProviderService = context
-				.getServiceImpl(IFloodlightProviderService.class);
-		debugCounterService = context
-				.getServiceImpl(IDebugCounterService.class);
+		floodlightProviderService = context.getServiceImpl(IFloodlightProviderService.class);
+		debugCounterService = context.getServiceImpl(IDebugCounterService.class);
 		restApiService = context.getServiceImpl(IRestApiService.class);
 		sfp = context.getServiceImpl(IStaticFlowEntryPusherService.class);
 		switchService = context.getServiceImpl(IOFSwitchService.class);
 	}
 
+	
 	@Override
 	public void startUp(FloodlightModuleContext context) {
 		floodlightProviderService.addOFMessageListener(OFType.PACKET_IN, this);
-		floodlightProviderService.addOFMessageListener(OFType.FLOW_REMOVED,
-				this);
+		floodlightProviderService.addOFMessageListener(OFType.FLOW_REMOVED, this);
 		floodlightProviderService.addOFMessageListener(OFType.ERROR, this);
 		restApiService.addRestletRoutable(new LearningSwitchWebRoutable());
 		switchService.addOFSwitchListener(this);
@@ -833,9 +734,8 @@ public class LearningSwitch implements IFloodlightModule,
 				FLOWMOD_DEFAULT_IDLE_TIMEOUT = Short.parseShort(idleTimeout);
 			}
 		} catch (NumberFormatException e) {
-			log.warn("Error parsing flow idle timeout, "
-					+ "using default of {} seconds",
-					FLOWMOD_DEFAULT_IDLE_TIMEOUT);
+			log.warn("Error parsing flow idle timeout, " +
+					"using default of {} seconds", FLOWMOD_DEFAULT_IDLE_TIMEOUT);
 		}
 		try {
 			String hardTimeout = configOptions.get("hardtimeout");
@@ -843,9 +743,8 @@ public class LearningSwitch implements IFloodlightModule,
 				FLOWMOD_DEFAULT_HARD_TIMEOUT = Short.parseShort(hardTimeout);
 			}
 		} catch (NumberFormatException e) {
-			log.warn("Error parsing flow hard timeout, "
-					+ "using default of {} seconds",
-					FLOWMOD_DEFAULT_HARD_TIMEOUT);
+			log.warn("Error parsing flow hard timeout, " +
+					"using default of {} seconds", FLOWMOD_DEFAULT_HARD_TIMEOUT);
 		}
 		try {
 			String priority = configOptions.get("priority");
@@ -853,35 +752,27 @@ public class LearningSwitch implements IFloodlightModule,
 				FLOWMOD_PRIORITY = Short.parseShort(priority);
 			}
 		} catch (NumberFormatException e) {
-			log.warn("Error parsing flow priority, " + "using default of {}",
+			log.warn("Error parsing flow priority, " +
+					"using default of {}",
 					FLOWMOD_PRIORITY);
 		}
-		log.debug("FlowMod idle timeout set to {} seconds",
-				FLOWMOD_DEFAULT_IDLE_TIMEOUT);
-		log.debug("FlowMod hard timeout set to {} seconds",
-				FLOWMOD_DEFAULT_HARD_TIMEOUT);
+		log.debug("FlowMod idle timeout set to {} seconds", FLOWMOD_DEFAULT_IDLE_TIMEOUT);
+		log.debug("FlowMod hard timeout set to {} seconds", FLOWMOD_DEFAULT_HARD_TIMEOUT);
 		log.debug("FlowMod priority set to {}", FLOWMOD_PRIORITY);
 
 		debugCounterService.registerModule(this.getName());
-		counterFlowMod = debugCounterService.registerCounter(this.getName(),
-				"flow-mods-written",
-				"Flow mods written to switches by LearningSwitch",
-				MetaData.WARN);
-		counterPacketOut = debugCounterService.registerCounter(this.getName(),
-				"packet-outs-written",
-				"Packet outs written to switches by LearningSwitch",
-				MetaData.WARN);
+		counterFlowMod = debugCounterService.registerCounter(this.getName(), "flow-mods-written", "Flow mods written to switches by LearningSwitch", MetaData.WARN);
+		counterPacketOut = debugCounterService.registerCounter(this.getName(), "packet-outs-written", "Packet outs written to switches by LearningSwitch", MetaData.WARN);
 	}
-
+	
 	@Override
-	public void switchAdded(DatapathId dpid) {
+	public void switchAdded(DatapathId dpid) {				
 		IOFSwitch sw = switchService.getSwitch(dpid);
-		for (int i = 0; i < 2; i++) {
+		for(int i=0; i < 2; i++) {
 			OFFlowAdd.Builder flow = sw.getOFFactory().buildFlowAdd();
 			Match.Builder match = sw.getOFFactory().buildMatch();
 			ArrayList<OFAction> actionList = new ArrayList<OFAction>();
-			OFActionOutput.Builder action = sw.getOFFactory().actions()
-					.buildOutput();
+			OFActionOutput.Builder action = sw.getOFFactory().actions().buildOutput();
 
 			match.setExact(MatchField.ETH_TYPE, EthType.IPv4);
 			match.setExact(MatchField.IP_PROTO, IpProtocol.TCP);
@@ -892,7 +783,7 @@ public class LearningSwitch implements IFloodlightModule,
 			action.setMaxLen(0xffFFffFF);
 			action.setPort(OFPort.CONTROLLER);
 			actionList.add(action.build());
-
+			
 			flow.setBufferId(OFBufferId.NO_BUFFER);
 			flow.setHardTimeout(0);
 			flow.setIdleTimeout(0);
@@ -900,7 +791,7 @@ public class LearningSwitch implements IFloodlightModule,
 			flow.setActions(actionList);
 			flow.setMatch(match.build());
 			flow.setPriority(65000);
-			sfp.addFlow("bg" + Integer.toString(i), flow.build(), sw.getId());
+			sfp.addFlow("bg" + Integer.toString(i), flow.build(), sw.getId());	
 		}
 		log.info("Adding flow to redirect BGP port in the switch: " + dpid);
 	}
@@ -914,8 +805,7 @@ public class LearningSwitch implements IFloodlightModule,
 	}
 
 	@Override
-	public void switchPortChanged(DatapathId switchId, OFPortDesc port,
-			PortChangeType type) {
+	public void switchPortChanged(DatapathId switchId, OFPortDesc port, PortChangeType type) {
 	}
 
 	@Override

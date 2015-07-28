@@ -39,13 +39,13 @@ public class BGPSecCacheRPKI {
 			// Verify NLRI routes
 			if (ip.equals("") && asn.equals(values[0])) {
 				log.info("Quering CACHE for NLRI (" + asn + "/" + prefix + 
-						 ")" + ", the result is true.");
+						 ")" + ", the result is TRUE.");
 				return true;    
 			}
 			// Verify withdraw routes
 			if (asn.equals("") && ip.equals(values[1])) {
 				log.info("Quering CACHE for WITHDRAW ROUTES (" + asn + "/" 
-			             + prefix + ")" + ", the result is true.");
+			             + prefix + ")" + ", the result is TRUE.");
 				return true;   			
 			}
 		}

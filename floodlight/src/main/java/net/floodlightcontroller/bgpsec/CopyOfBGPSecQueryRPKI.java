@@ -14,52 +14,40 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BGPSecQueryRPKI {
+public class CopyOfBGPSecQueryRPKI {
 	protected static Logger log = LoggerFactory
-			.getLogger(BGPSecQueryRPKI.class);
+			.getLogger(CopyOfBGPSecQueryRPKI.class);
 	static ArrayList<String> prefixData = new ArrayList<String>();
 
-	/**
-	 * Verify ROA in cache and anchors database (RIPE RPKI Validator)
-	 * 
-	 * @param prefix
-	 *            a prefix to validate associated with asn
-	 * @param asn
-	 *            is asn associated with prefix
-	 * @param speaker
-	 *            that generates the update;
-	 * @param type
-	 *            is if route is withdraw or NLRI
-	 * @return true if ROA is passed or false if ROA don't passed
-	 */
-	public static boolean roaValidator(String prefix, String asn,
+	public static boolean roaValidator(String prefixes, String asn,
 			String speaker, int type) {
-		log.info("Data before ROA verify, prefix: " + prefix + ", ASN: " + asn
-				+ ", speaker: " + speaker + ", routeType: " + type);
-		// type = 0 is Withdraw routes, where as type = 1 is NLRI routes
-		if (type == 1) {
-			// Check prefix in NLRI at RPKI Cache
-			String asnPrefix = asn + "/" + prefix;
-			log.info("NLRI to verify on RPKI: " + asnPrefix);
+		prefixData = BGPSecPrefixChainParser.prefixParser(prefixes);
+		// Iterator for the total of NLRI/Withdraw prefixes
+		for (String eachPrefix : prefixData) {
+			if (type == 1) {
+				// Check prefix in NLRI at RPKI Cache
+				String asnPrefix = asn + "/" + eachPrefix;
+				log.info("ASN/Prefix to verify on RPKI: " + asnPrefix);
 
-			if (!(BGPSecCacheRPKI.getROAOnCache(prefix, asn, ""))) {
-				// Check prefix in RPKI Anchors database
-				if (!(getROAStatus(asnPrefix))) {
-					// Return false even whether at least of them is invalid
-					log.info("ASN/Prefix NOT EXIST in DATABASE: " + asnPrefix);
-					return false;
-				} else {
-					// Prefix found in RPKI database, add in RPKI Cache
-					log.info("ASN/Prefix EXIST in DATABASE: " + asnPrefix);
-					BGPSecCacheRPKI.setROAOnCache(prefix, asn, speaker);
+				if (!(BGPSecCacheRPKI.getROAOnCache(eachPrefix, asn, ""))) {
+					// Check prefix in RPKI Anchors database
+					if (!(getROAStatus(asnPrefix))) {
+						// Return false even whether at least of them is invalid
+						log.info("ASN/Prefix NOT EXIST in DATABASE: "
+								+ asnPrefix);
+						return false;
+					} else {
+						// Prefix found in RPKI database, add in RPKI Cache
+						log.info("ASN/Prefix EXIST in DATABASE: " + asnPrefix);
+						BGPSecCacheRPKI.setROAOnCache(eachPrefix, asn, speaker);
+					}
 				}
+			} else {
+				// Check withdraw prefixes on RPKI Cache
+				log.info("Withdraw routes, prefix to verify on RPKI: " + eachPrefix + ", Speaker:  " + speaker);
+				if (!(BGPSecCacheRPKI.getROAOnCache(eachPrefix, "", speaker)))
+					return false;
 			}
-		} else {
-			// Check withdraw prefixes on RPKI Cache
-			log.info("Withdraw routes to verify on RPKI: " + prefix
-					+ ", Speaker:  " + speaker);
-			if (!(BGPSecCacheRPKI.getROAOnCache(prefix, "", speaker)))
-				return false;
 		}
 		return true;
 	}
@@ -68,8 +56,7 @@ public class BGPSecQueryRPKI {
 	 * HTTP request to RPKI and parse JSON result
 	 * 
 	 * @param url
-	 * @return true if query is "valid" and false if "invalid" or "not found".
-	 *         It's based in RFC6811.
+	 * @return
 	 */
 	public static boolean getROAStatus(String data) {
 		JSONObject mainObject;
