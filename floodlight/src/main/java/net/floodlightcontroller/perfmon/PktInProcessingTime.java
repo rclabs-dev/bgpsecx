@@ -29,8 +29,6 @@ import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFMessageListener;
 import net.floodlightcontroller.core.IOFSwitch;
-import net.floodlightcontroller.core.annotations.LogMessageCategory;
-import net.floodlightcontroller.core.annotations.LogMessageDoc;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
@@ -66,7 +64,6 @@ import org.slf4j.LoggerFactory;
  *    syslog is generated instead
  * 
  */
-@LogMessageCategory("Performance Monitoring")
 public class PktInProcessingTime
     implements IFloodlightModule, IPktInProcessingTimeService {
 
@@ -99,12 +96,19 @@ public class PktInProcessingTime
     protected static final int ONE_BUCKET_DURATION_SECONDS = 10;// seconds
     protected static final long ONE_BUCKET_DURATION_NANOSECONDS  =
                                 ONE_BUCKET_DURATION_SECONDS * 1000000000;
-    
+
     @Override
-    public void bootstrap(List<IOFMessageListener> listeners) {
-            ctb = new CumulativeTimeBucket(listeners);
+    public void bootstrap() {
+        if (ctb == null) {
+            ctb = new CumulativeTimeBucket();
+        }
     }
-    
+
+    @Override
+    public void addListener(IOFMessageListener listener) {
+        ctb.addListener(listener);
+    }
+
     @Override
     public boolean isEnabled() {
         return isEnabled;
@@ -113,7 +117,7 @@ public class PktInProcessingTime
     @Override
     public void setEnabled(boolean enabled) {
     	if(enabled){
-    		bootstrap(floodlightProvider.getListeners().get(OFType.PACKET_IN));
+            bootstrap();
     	}
         this.isEnabled = enabled;
         logger.debug("Setting module to " + isEnabled);
@@ -149,11 +153,6 @@ public class PktInProcessingTime
     }
     
     @Override
-    @LogMessageDoc(level="WARN",
-            message="Time to process packet-in exceeded threshold: {}",
-            explanation="Time to process packet-in exceeded the configured " +
-            		"performance threshold",
-            recommendation=LogMessageDoc.CHECK_CONTROLLER)
     public void recordEndTimePktIn(IOFSwitch sw, OFMessage m, FloodlightContext cntx) {
         if (isEnabled()) {
             long procTimeNs = System.nanoTime() - startTimePktNs;
@@ -207,11 +206,6 @@ public class PktInProcessingTime
     }
     
     @Override
-    @LogMessageDoc(level="INFO",
-        message="Packet processing time threshold for warning" +
-            " set to {time} ms.",
-        explanation="Performance monitoring will log a warning if " +
-    		"packet processing time exceeds the configured threshold")
     public void startUp(FloodlightModuleContext context) {
         // Add our REST API
         restApi.addRestletRoutable(new PerfWebRoutable());

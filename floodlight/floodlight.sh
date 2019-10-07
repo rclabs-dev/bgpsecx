@@ -25,12 +25,12 @@ JVM_OPTS="$JVM_OPTS -Dpython.security.respectJavaAccessibility=false"
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
-    <logger name="org" level=“ALL”/>
-    <logger name="LogService" level=“DEBUG”/> <!-- Restlet access logging -->
-    <logger name="net.floodlightcontroller" level=“ALL”/>
-    <logger name="net.floodlightcontroller.logging" level=“ALL”/>
+    <logger name="org" level="ALL"/>
+    <logger name="LogService" level="DEBUG"/> <!-- Restlet access logging -->
+    <logger name="net.floodlightcontroller" level="ALL"/>
+    <logger name="net.floodlightcontroller.logging" level="ALL"/>
 </configuration>
 EOF_LOGBACK
 
 echo "Starting floodlight server ..."
-java ${JVM_OPTS} -Dlogback.configurationFile=${FL_LOGBACK} -jar ${FL_JAR}
+java ${JVM_OPTS} -Dlogback.configurationFile=${FL_LOGBACK} -jar ${FL_JAR} "$@"

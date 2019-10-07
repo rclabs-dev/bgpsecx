@@ -20,13 +20,13 @@ package net.floodlightcontroller.devicemanager;
 import java.util.Date;
 
 import org.projectfloodlight.openflow.types.IPv4Address;
+import org.projectfloodlight.openflow.types.IPv6Address;
 import org.projectfloodlight.openflow.types.MacAddress;
 import org.projectfloodlight.openflow.types.VlanVid;
 
 
 /**
- * Represents an independent device on the network.  A device consists of a 
- * set of entities, and all the information known about a given device comes
+ * Represents an independent device on the network.  a, and all the information known about a given device comes
  * only from merging all associated entities for that device.
  * @author readams
  */
@@ -63,11 +63,18 @@ public interface IDevice {
     public IPv4Address[] getIPv4Addresses();
     
     /**
+     * Get all unique IPv6 addresses associated with the device.
+     * @return an array containing the unique IPv6 addresses for the device.
+     */
+    public IPv6Address[] getIPv6Addresses();
+    
+    /**
      * Get all unique attachment points associated with the device.  This will
      * not include any blocked attachment points.
      * @return an array containing all unique attachment points for the device
      */
     public SwitchPort[] getAttachmentPoints();
+    
     /**
      * Get all old attachment points associated with the device.  this is used in host movement scenario.
      * @return an array containing all unique old attachment points for the device

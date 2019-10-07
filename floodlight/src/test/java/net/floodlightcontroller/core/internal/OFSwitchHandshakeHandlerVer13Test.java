@@ -10,16 +10,20 @@ import static org.easymock.EasyMock.verify;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 
+import net.floodlightcontroller.core.IOFSwitch;
+import net.floodlightcontroller.core.IOFSwitch.SwitchStatus;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import net.floodlightcontroller.core.IOFSwitchBackend;
-import net.floodlightcontroller.core.OFConnection;
 import net.floodlightcontroller.core.SwitchDescription;
 import net.floodlightcontroller.core.internal.OFSwitchHandshakeHandler.WaitAppHandshakeState;
+import net.floodlightcontroller.core.internal.OFSwitchHandshakeHandler.WaitTableFeaturesReplyState;
 
 import org.projectfloodlight.openflow.protocol.OFCapabilities;
 import org.projectfloodlight.openflow.protocol.OFControllerRole;
@@ -33,12 +37,15 @@ import org.projectfloodlight.openflow.protocol.OFPortDescStatsReply;
 import org.projectfloodlight.openflow.protocol.OFPortDescStatsRequest;
 import org.projectfloodlight.openflow.protocol.OFRoleReply;
 import org.projectfloodlight.openflow.protocol.OFRoleRequest;
+import org.projectfloodlight.openflow.protocol.OFTableFeaturesStatsReply;
+import org.projectfloodlight.openflow.protocol.OFTableFeaturesStatsRequest;
 import org.projectfloodlight.openflow.protocol.OFVersion;
 import org.projectfloodlight.openflow.types.DatapathId;
 import org.projectfloodlight.openflow.types.OFAuxId;
 import org.projectfloodlight.openflow.types.OFPort;
 
 import com.google.common.collect.ImmutableList;
+import org.projectfloodlight.openflow.types.TableId;
 
 
 public class OFSwitchHandshakeHandlerVer13Test extends OFSwitchHandlerTestBase {
@@ -93,7 +100,7 @@ public class OFSwitchHandshakeHandlerVer13Test extends OFSwitchHandlerTestBase {
         switchHandler.processOFMessage(getPortDescStatsReply());
     }
 
-    public void handleDescStatsAndCreateSwitch(boolean subHandShakeComplete) throws Exception {
+    public void handleDescStatsAndCreateSwitch() throws Exception {
         // build the stats reply
         OFDescStatsReply sr = createDescriptionStatsReply();
 
@@ -102,9 +109,8 @@ public class OFSwitchHandshakeHandlerVer13Test extends OFSwitchHandlerTestBase {
         setupSwitchForInstantiationWithReset();
         sw.setPortDescStats(anyObject(OFPortDescStatsReply.class));
         expectLastCall().once();
-        sw.startDriverHandshake();
-        expectLastCall().once();
-        expect(sw.isDriverHandshakeComplete()).andReturn(subHandShakeComplete).once();
+       
+        expect(sw.getOFFactory()).andReturn(factory).anyTimes();
         replay(sw);
 
         reset(switchManager);
@@ -122,14 +128,44 @@ public class OFSwitchHandshakeHandlerVer13Test extends OFSwitchHandlerTestBase {
         // send the description stats reply
         switchHandler.processOFMessage(sr);
 
+        OFMessage msg = connection.retrieveMessage();
+        assertThat(msg, CoreMatchers.instanceOf(OFTableFeaturesStatsRequest.class));
+        verifyUniqueXids(msg);
+        
         verify(sw, switchManager);
+    }
+    
+    @SuppressWarnings("unchecked")
+	public void handleTableFeatures(boolean subHandShakeComplete) throws Exception {
+    	// build the table features stats reply
+    	OFTableFeaturesStatsReply tf = createTableFeaturesStatsReply();
+    	
+    	reset(sw);
+    	sw.startDriverHandshake();
+        expectLastCall().once();
+        expect(sw.isDriverHandshakeComplete()).andReturn(subHandShakeComplete).once();
+    	sw.processOFTableFeatures(anyObject(List.class));
+    	expectLastCall().once();
+    	expect(sw.getOFFactory()).andReturn(factory).anyTimes();
+    	replay(sw);
+    	
+    	switchHandler.processOFMessage(tf);
+    }
+    
+    @Test
+    public void moveToWaitTableFeaturesReplyState() throws Exception {
+    	moveToWaitDescriptionStatReply();
+    	handleDescStatsAndCreateSwitch();
+    	
+        assertThat(switchHandler.getStateForTesting(),
+                   CoreMatchers.instanceOf(WaitTableFeaturesReplyState.class));
     }
 
     @Test
     @Override
     public void moveToWaitAppHandshakeState() throws Exception {
-    	moveToWaitDescriptionStatReply();
-    	handleDescStatsAndCreateSwitch(true);
+    	moveToWaitTableFeaturesReplyState();
+    	handleTableFeatures(true);
     	
         assertThat(switchHandler.getStateForTesting(),
                    CoreMatchers.instanceOf(WaitAppHandshakeState.class));
@@ -186,12 +222,84 @@ public class OFSwitchHandshakeHandlerVer13Test extends OFSwitchHandlerTestBase {
     @Override
     @Test
     public void moveToWaitSwitchDriverSubHandshake() throws Exception {
-        moveToWaitDescriptionStatReply();
-        handleDescStatsAndCreateSwitch(false);
+        moveToWaitTableFeaturesReplyState();
+        handleTableFeatures(false); //TODO
 
         assertThat(switchHandler.getStateForTesting(), CoreMatchers.instanceOf(OFSwitchHandshakeHandler.WaitSwitchDriverSubHandshakeState.class));
         assertThat("Unexpected message captured", connection.getMessages(), Matchers.empty());
         verify(sw);
     }
 
+    @Test
+    public void testSetupDefaultRules() throws Exception {
+        OFMessage reply = switchToMasterStateTransition();
+        expect(sw.getTables()).andReturn(Collections.EMPTY_LIST).once();
+        expect(sw.getNumTables()).andReturn((short) 0).once();
+        replay(sw);
+
+        /* Go into the MasterState */
+        boolean setupDefaultFlowOption = OFSwitchManager.setupTablesDefaultFlows;
+        try {
+            OFSwitchManager.setupTablesDefaultFlows = true;
+            switchHandler.processOFMessage(reply);
+        } finally {
+            OFSwitchManager.setupTablesDefaultFlows = setupDefaultFlowOption;
+        }
+
+        assertThat(switchHandler.getStateForTesting(),
+                CoreMatchers.instanceOf(OFSwitchHandshakeHandler.MasterState.class));
+    }
+
+    @Test
+    public void testDoNotSetupDefaultRules() throws Exception {
+        OFMessage reply = switchToMasterStateTransition();
+        replay(sw);
+
+        /* Go into the MasterState */
+        boolean setupDefaultFlowOption = OFSwitchManager.setupTablesDefaultFlows;
+        try {
+            OFSwitchManager.setupTablesDefaultFlows = false;
+            switchHandler.processOFMessage(reply);
+        } finally {
+            OFSwitchManager.setupTablesDefaultFlows = setupDefaultFlowOption;
+        }
+
+        assertThat(switchHandler.getStateForTesting(),
+                CoreMatchers.instanceOf(OFSwitchHandshakeHandler.MasterState.class));
+    }
+
+    private OFMessage switchToMasterStateTransition() throws Exception {
+        // first, move us to WAIT_INITIAL_ROLE_STATE
+        moveToWaitInitialRole();
+
+        // Set the role
+        long xid = setupSwitchSendRoleRequestAndVerify(null, OFControllerRole.ROLE_MASTER);
+        assertThat(switchHandler.getStateForTesting(),
+                CoreMatchers.instanceOf(OFSwitchHandshakeHandler.WaitInitialRoleState.class));
+
+        // prepare mocks and inject the role reply message
+        reset(sw);
+        expect(sw.getOFFactory()).andReturn(factory).anyTimes();
+        expect(sw.write(anyObject(OFMessage.class))).andReturn(true).anyTimes();
+        expect(sw.write(anyObject(Iterable.class))).andReturn(Collections.EMPTY_LIST).anyTimes();
+        sw.setAttribute(IOFSwitch.SWITCH_SUPPORTS_NX_ROLE, true);
+        expectLastCall().once();
+        sw.setControllerRole(OFControllerRole.ROLE_MASTER);
+        expectLastCall().once();
+        expect(sw.getStatus()).andReturn(SwitchStatus.HANDSHAKE).once();
+        sw.setStatus(SwitchStatus.MASTER);
+        expectLastCall().once();
+
+        if (factory.getVersion().compareTo(OFVersion.OF_13) >= 0) {
+            //expect(sw.getMaxTableForTableMissFlow()).andReturn(TableId.ZERO).times(1);
+            expect(sw.getTableFeatures(TableId.ZERO))
+                    .andReturn(TableFeatures.of(createTableFeaturesStatsReply().getEntries().get(0))).anyTimes();
+        }
+
+        reset(switchManager);
+        switchManager.switchStatusChanged(sw, SwitchStatus.HANDSHAKE, SwitchStatus.MASTER);
+        expectLastCall().once();
+        replay(switchManager);
+        return getRoleReply(xid, OFControllerRole.ROLE_MASTER);
+    }
 }
