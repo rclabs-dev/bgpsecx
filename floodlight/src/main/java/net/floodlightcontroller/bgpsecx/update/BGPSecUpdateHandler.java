@@ -1,5 +1,10 @@
 package net.floodlightcontroller.bgpsecx.update;
 
+/*
+ * RFCs
+ * 4721 (A Border Gateway Protocol 4 (BGP-4)
+ * 7606 (Revised Error Handling for BGP UPDATE Messages)
+ */
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;

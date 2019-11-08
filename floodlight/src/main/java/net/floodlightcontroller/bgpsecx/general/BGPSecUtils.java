@@ -52,27 +52,18 @@ public class BGPSecUtils {
 		return Integer.parseInt(hexNumber, 16);
 	}
 		
-	// Converts byte array into String
-	public static String bytesToHexString(byte[] bytes) {
-		if(bytes == null) {
-			return "null";
-		}
-		String ret = "";
-		StringBuffer buf = new StringBuffer();
-		for(int i = 0; i < bytes.length; i++) {
-			if(i > 0) {
-				ret += ":";
-			}
-			short u8byte = (short) (bytes[i] & 0xff);
-			String tmp = Integer.toHexString(u8byte);
-			if(tmp.length() == 1) {
-				buf.append("0");
-			}
-			buf.append(tmp);
-		}
-		ret = buf.toString();
-	    return ret;
-	}		
+	private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+	
+	public static String bytesToHex(byte[] bytes) {
+	    char[] hexChars = new char[bytes.length * 2];
+	    for (int j = 0; j < bytes.length; j++) {
+	        int v = bytes[j] & 0xFF;
+	        hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+	        hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+	    }
+	    return new String(hexChars);
+	}
+	
 	
 	/**
 	 * Returns a new byte array from given byte array, starting at start index with the size of the length parameter.
@@ -222,7 +213,7 @@ public class BGPSecUtils {
 		 * @return
 		 */		
 		public static String ipByteToDec(byte[] ip) {
-			return ipDecToHex(bytesToHexString(ip));
+			return ipDecToHex(bytesToHex(ip));
 		}		
 		
 		/**

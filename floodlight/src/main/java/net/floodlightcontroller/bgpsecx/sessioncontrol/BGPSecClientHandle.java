@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import net.floodlightcontroller.bgpsecx.BGPSecX;
+import net.floodlightcontroller.bgpsecx.BGPSecMain;
 import net.floodlightcontroller.bgpsecx.general.BGPSecDefs;
 import net.floodlightcontroller.bgpsecx.general.BGPSecErrorCodes;
 import net.floodlightcontroller.bgpsecx.general.BGPSecUtils;
@@ -31,18 +31,18 @@ public class BGPSecClientHandle extends BGPSecErrorCodes implements Runnable{
 	 * msg_timeout (long).: timeout for waiting by one message response
 	 *   
 	 */
-	private HashMap<String , Object> sessionParameters  = new HashMap<String, Object>();
-	String srcIPAddr = null;
+	private static HashMap<String , Object> sessionParameters  = new HashMap<String, Object>();
+	private static String srcIpAddr = null;
 
     public BGPSecClientHandle(Socket cltSocket) {
         this.cltSocket = cltSocket;
     }
 
     public void run() {
-    	srcIPAddr = cltSocket.getInetAddress().getHostAddress();
+    	srcIpAddr = cltSocket.getInetAddress().getHostAddress();
     	DataOutputStream outData = null;
     	int msgType = 0;
-    	log.info("Started new session with peer " + srcIPAddr);
+    	log.info("Started new session with peer " + srcIpAddr);
     	try {
     		outData = new DataOutputStream(cltSocket.getOutputStream());
     		int count;
@@ -64,7 +64,7 @@ public class BGPSecClientHandle extends BGPSecErrorCodes implements Runnable{
     						} else {
     							// Need to make a notification for HEADER_ERROR with SUBCODE 2
     							// and broken the connection with remote peer.
-    							log.debug("Min/max BGP message length error.");
+    							log.info("Min/max BGP message length error.");
     							outData.write(buildNotificationMsg(new byte[] 
     									{NOTIFICATION, HEADER_ERROR, HDR_SUB_BAD_MSG_LEN}));
     							cltSocket.close();
@@ -77,32 +77,33 @@ public class BGPSecClientHandle extends BGPSecErrorCodes implements Runnable{
     				if (msgType == 0) {
     					// Need to make a notification for HEADER_ERROR with SUBCODE 3
     					// and broken the connection with remote peer.
-    					log.debug("Unknown BGP message type.");
+    					log.info("Unknown BGP message type.");
 						outData.write(buildNotificationMsg(new byte[] 
 								{NOTIFICATION, HEADER_ERROR, HDR_SUB_BAD_MSG_TYPE}));    
 						cltSocket.close();
     				}
     		        
     				
-    		        log.debug("Received a " + BGPSecDefs.MSG_TYPE[msgType - 1] + 
-    		        	      " message from " + srcIPAddr + ", message: " + 
-    		        		  BGPSecUtils.bytesToHexString(data));
+    		        log.info("Received a " + BGPSecDefs.MSG_TYPE[msgType - 1] + 
+    		        	      " message from " + srcIpAddr + ", message: " + 
+    		        		  BGPSecUtils.bytesToHex(data));
     		        
-    		        //log.debug("Length of hastable: " + BGPSecIXR.sessionData.getSize());
-    		        //log.debug("Thread number: " + this.getClass().getName());
+    		        //log.info("Length of hastable: " + BGPSecIXR.sessionData.getSize());
+    		        //log.info("Thread number: " + this.getClass().getName());
     		        
     				switch (msgType) {	
 					case BGPSecDefs.OPEN:
-						returnData = openMsgHandle(data);
+						returnData = BGPSecOpenHandle.checkMessage(data);
 						// OPEN message ok, reply with local parameters
 						if (returnData.length > 3){
-							log.debug("Reply OPEN message to " + srcIPAddr + 
-									  ", message: " + BGPSecUtils.bytesToHexString(returnData));
+							log.info("Reply OPEN message to " + srcIpAddr + 
+									  ", message: " + BGPSecUtils.bytesToHex(returnData));
 							outData.write(returnData);
 						// OPEN message contains one or several wrong parameters,
 						// need to send a notification message
 						} else{ 
-							
+							log.info("OPEN message from " + srcIpAddr + 
+									  " not accepted, message: " + BGPSecUtils.bytesToHex(returnData));
 						}
 						break;
 						
@@ -110,14 +111,14 @@ public class BGPSecClientHandle extends BGPSecErrorCodes implements Runnable{
 						break;
 						
 					case BGPSecDefs.NOTIFICATION:
-						returnData = BGPSecNotificationHandle.checkMessage(data, srcIPAddr);
-						//log.debug("Reply OPEN message to " + srcIPAddr + 
+						returnData = BGPSecNotificationHandle.checkMessage(data, srcIpAddr);
+						//log.info("Reply OPEN message to " + srcIpAddr + 
 						//		  ", message: " + BGPSecUtils.bytesToHexString(returnData));
 						//outData.write(returnData);	
 						break;
 
 					case BGPSecDefs.KEEPALIVE:
-						/*log.debug("Hashtables Values: " + 
+						/*log.info("Hashtables Values: " + 
 								  sessionParameters.get("asn") + "," +
 								  sessionParameters.get("session_state") + "," +
 								  sessionParameters.get("thread") + "," +
@@ -127,21 +128,21 @@ public class BGPSecClientHandle extends BGPSecErrorCodes implements Runnable{
 						          sessionParameters.get("msg_timeout")); */
 			
 				        long a = (System.currentTimeMillis()/1000) - (Long) sessionParameters.get("hold_time");
-				        log.debug("Hold Time diference: " + a);		
+				        log.info("Hold Time diference: " + a);		
 						
 						if ((Integer)sessionParameters.get("session_state") == 0){
 							sessionParameters.replace("session_state", 1);
 							sessionParameters.replace("next_msg", 0);
 							sessionParameters.replace("hold_time", System.currentTimeMillis()/1000);
 							sessionParameters.replace("msg_timeout", System.currentTimeMillis()/1000);
-							BGPSecX.sessionData.replaceAllParameters(sessionParameters, srcIPAddr);
-							log.info("BGP Session with peer " + srcIPAddr + " was established!");	
+							BGPSecMain.sessionData.replaceAllParameters(sessionParameters, srcIpAddr);
+							log.info("BGP Session with peer " + srcIpAddr + " was established!");	
 						} else{
 							sessionParameters.replace("hold_time", System.currentTimeMillis()/1000);
-							BGPSecX.sessionData.replaceAllParameters(sessionParameters, srcIPAddr);
+							BGPSecMain.sessionData.replaceAllParameters(sessionParameters, srcIpAddr);
 						}
 						
-						log.debug("Reply KEEPALIVE Message to " + srcIPAddr);
+						log.info("Reply KEEPALIVE Message to " + srcIpAddr);
 						outData.write(BGPSecUtils.hexStrToByteArray(BGPSecDefs.KEEPALIVE_MSG.toString()));						
 						break;
 						
@@ -152,83 +153,27 @@ public class BGPSecClientHandle extends BGPSecErrorCodes implements Runnable{
     			cltSocket.close();
     		} // while true
     	} catch (IOException e) {
-    		log.info("Ended session with peer " + srcIPAddr);
+    		log.info("Ended session with peer " + srcIpAddr);
     	}
     }
     
-    public byte[] openMsgHandle(byte[] msg){	
-		/*  MSG HEADER (01-04-#ASN-##HT-@@@ID)
-		*  #ASN: AS Number; ##HT: Hold Time; @@ID of speaker
-		*  
-		*  RETURNED CODES
-		*  01: Peer is not authorized to keep a BGP session
-		*  02: The minimum length of message is wrong 
-		*  03: Incompatible BGP Version
-		*  04: Hold Time is out-off the specified
-		*/ 
-		int asn = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(msg, 4, 2));
-		String id = BGPSecUtils.bytesToHexString((BGPSecUtils.subByte(msg, 8, 4)));
-		
-		/**
-		*  Check whether the peer is authorized to keep a BGP session.
-		*  This also is with compliance RFCXXX for ID equal to zero 
-		*  because id stored in hastable ever will be different of zero.
-		*/
-		if (!BGPSecX.containsPeer(asn))
-			return new byte[] {0x01};
-		else if (!BGPSecX.getAuthPeersValue(asn).equals(id))
-			return new byte[] {0x01};
-			
-		// Check the length of message (17 are of the header mark and type message)
-		if ((msg.length + 17) < BGPSecDefs.MIN_MSG_LENGTH[BGPSecDefs.OPEN]){
-			return new byte[] {0x02};
-		}
-			
-		// Check whether BGP version is compatible	
-		if (!Arrays.equals(BGPSecUtils.subByte(msg, 3, 1), BGPSecDefs.MY_BGP_VERSION)){
-			return new byte[] {0x03};
-		} 
-			
-		// Check min/max Hold Time value
-		int holdTime = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(msg, 6, 2));
-		if (holdTime < BGPSecDefs.MIN_HOLD_TIME || holdTime > BGPSecDefs.MAX_HOLD_TIME){
-			return new byte[] {0x04};
-		}
-			
-		/*
-	  	 * Calculates the total message length (18 is value 
-		 * of header mark + 2 bytes of length byte)
-		 */
-		String msgLen = BGPSecUtils.decToHexWithPad(((BGPSecDefs.MY_DEFAULT_OPEN_HEADER.length() 
-						+ BGPSecDefs.MY_OPEN_OPTIONAL_PARAM.length()) / 2) + 18,4);
-		StringBuilder buildMsg = new StringBuilder()
-								.append(BGPSecDefs.HEADER_MARKER_HEX)
-								.append(msgLen)
-								.append(BGPSecDefs.MY_DEFAULT_OPEN_HEADER)
-								.append(BGPSecDefs.MY_OPEN_OPTIONAL_PARAM)
-								.append(BGPSecDefs.KEEPALIVE_MSG);
-			
-		if (BGPSecX.sessionData.containsPeer(id)){
-			log.debug("Há ID...........");
-		} else {
-			sessionParameters.put("thread", 0);
-			sessionParameters.put("asn", asn);
-			sessionParameters.put("session_state", 0);
-			sessionParameters.put("next_msg", BGPSecDefs.KEEPALIVE);
-			sessionParameters.put("hold_timer", holdTime);
-			sessionParameters.put("hold_time", System.currentTimeMillis()/1000);
-			sessionParameters.put("msg_timeout", System.currentTimeMillis()/1000);
-			BGPSecX.sessionData.setAllParameters(sessionParameters, srcIPAddr);	
-		}
-		// There are not any errors in OPEN message. Reply with other OPEN + a concatenated KEEPALIVE
-		return BGPSecUtils.hexStrToByteArray(buildMsg.toString());
-    }
-
     public byte[] buildNotificationMsg(byte[] codes){
     	byte[] msgToSend = BGPSecUtils.hexStrToByteArray(BGPSecUtils.decToHexWithPad(codes.length + 18, 4));
     	msgToSend = BGPSecUtils.concatBytes(BGPSecDefs.HEADER_MARKER, msgToSend);
     	msgToSend = BGPSecUtils.concatBytes(msgToSend, codes);
-    	log.debug("NOTIFICATION message reply:  " + BGPSecUtils.bytesToHexString(msgToSend));
+    	log.info("NOTIFICATION message reply:  " + BGPSecUtils.bytesToHex(msgToSend));
     	return msgToSend;
     }
+    
+    public static void setSessionPar(String param, Object value) {
+    	sessionParameters.put(param, value);
+	}
+    
+    public static HashMap<String , Object> getSessionPar() {
+    	return sessionParameters;
+	}
+    
+    public static String getClientIpAddr() {
+    	return srcIpAddr;
+	}
 }

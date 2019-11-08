@@ -15,7 +15,7 @@ public class BGPSecNotificationHandle extends BGPSecErrorCodes {
 		int code = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(msg, 3, 1));
 		int subcode = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(msg, 4, 1));
         if (msgLen > 6){
-        	notifyData = BGPSecUtils.bytesToHexString(BGPSecUtils.subByte(msg, 5));
+        	notifyData = BGPSecUtils.bytesToHex(BGPSecUtils.subByte(msg, 5));
         }
         
         log.debug("Notification CODE: " + code + ", SUBCODE: " + subcode +

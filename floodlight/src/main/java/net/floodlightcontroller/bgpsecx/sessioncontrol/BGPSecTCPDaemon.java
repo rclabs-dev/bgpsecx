@@ -63,9 +63,10 @@ public class BGPSecTCPDaemon implements Runnable{
             this.serverSocket = 
             		new ServerSocket(this.srvPort, 
             		this.socketQueue, InetAddress.getByName(this.srvIPAddr));
-            log.info("BGP daemon was started and listening on address " + this.srvIPAddr + ":" + this.srvPort);
+            log.info("BGP daemon was started and listening on address " + this.srvIPAddr + ":" + this.srvPort 
+            		 + ", and " + BGPSecDefs.MY_ASN + " as main ASN.");
         } catch (IOException | NullPointerException e) {
-            throw new RuntimeException("Cannot binding BGP port.", e);
+            throw new RuntimeException("Cannot binding BGP port (on " + srvIPAddr + "/" + srvPort + ")", e);
         }
     }
 

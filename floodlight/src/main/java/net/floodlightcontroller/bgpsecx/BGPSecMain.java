@@ -1372,7 +1372,8 @@ public class BGPSecMain extends ForwardingBase implements IFloodlightModule, IOF
         //sessionData.clearAllSessionData();
 	    // List of authorized peers for establish BGP Session
 	    authPeers.clear();
-	    authPeers.put(65001, "ac110101");
+	    authPeers.put(65001, "0afb0b9C"); // 10.251.11.156
+	    //authPeers.put(65001, "7F000001"); // 127.0.0.1
 	    authPeers.put(65002, "ac110102");
 	    authPeers.put(65003, "ac110103");
 	    authPeers.put(65004, "ac110104");

@@ -1,0 +1,23 @@
+2019/11/08 14:53:03 ZEBRA: Can't bind to unix socket /run/quagga/zserv.api: No such file or directory
+2019/11/08 14:53:03 ZEBRA: zebra can't provide full functionality due to above error
+2019/11/08 14:53:03 ZEBRA: Cannot bind path /run/quagga/zebra.vty: No such file or directory
+2019/11/08 14:53:03 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 14:57:08 ZEBRA: Can't bind to unix socket /run/quagga/zserv.api: No such file or directory
+2019/11/08 14:57:08 ZEBRA: zebra can't provide full functionality due to above error
+2019/11/08 14:57:08 ZEBRA: Cannot bind path /run/quagga/zebra.vty: No such file or directory
+2019/11/08 14:57:08 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:03:06 ZEBRA: Can't bind to unix socket /run/quagga/zserv.api: No such file or directory
+2019/11/08 15:03:06 ZEBRA: zebra can't provide full functionality due to above error
+2019/11/08 15:03:06 ZEBRA: Cannot bind path /run/quagga/zebra.vty: No such file or directory
+2019/11/08 15:03:06 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:04:41 ZEBRA: Can't bind to unix socket /run/quagga/zserv.api: No such file or directory
+2019/11/08 15:04:41 ZEBRA: zebra can't provide full functionality due to above error
+2019/11/08 15:04:41 ZEBRA: Cannot bind path /run/quagga/zebra.vty: No such file or directory
+2019/11/08 15:04:41 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:08:37 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:11:45 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:26:02 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:45:14 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:45:27 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:54:11 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 16:10:07 ZEBRA: Zebra 1.2.4 starting: vty@2601

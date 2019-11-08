@@ -1,0 +1,142 @@
+2019/11/08 14:53:03 ZEBRA: Can't bind to unix socket /run/quagga/zserv.api: No such file or directory
+2019/11/08 14:53:03 ZEBRA: zebra can't provide full functionality due to above error
+2019/11/08 14:53:03 ZEBRA: Cannot bind path /run/quagga/zebra.vty: No such file or directory
+2019/11/08 14:53:03 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 14:57:08 ZEBRA: Can't bind to unix socket /run/quagga/zserv.api: No such file or directory
+2019/11/08 14:57:08 ZEBRA: zebra can't provide full functionality due to above error
+2019/11/08 14:57:08 ZEBRA: Cannot bind path /run/quagga/zebra.vty: No such file or directory
+2019/11/08 14:57:08 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:03:06 ZEBRA: Can't bind to unix socket /run/quagga/zserv.api: No such file or directory
+2019/11/08 15:03:06 ZEBRA: zebra can't provide full functionality due to above error
+2019/11/08 15:03:06 ZEBRA: Cannot bind path /run/quagga/zebra.vty: No such file or directory
+2019/11/08 15:03:06 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:04:41 ZEBRA: Can't bind to unix socket /run/quagga/zserv.api: No such file or directory
+2019/11/08 15:04:41 ZEBRA: zebra can't provide full functionality due to above error
+2019/11/08 15:04:41 ZEBRA: Cannot bind path /run/quagga/zebra.vty: No such file or directory
+2019/11/08 15:04:41 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:08:37 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:08:39 ZEBRA: client 14 says hello and bids fair to announce only bgp routes
+2019/11/08 15:08:39 ZEBRA: Try to set TE Link Param
+2019/11/08 15:08:39 ZEBRA: Try to set TE Link Param
+2019/11/08 15:08:39 ZEBRA: Try to set TE Link Param
+2019/11/08 15:08:39 ZEBRA: client 15 says hello and bids fair to announce only bgp routes
+2019/11/08 15:08:39 ZEBRA: sender of bgp routes changed ->
+2019/11/08 15:08:39 ZEBRA: Try to set TE Link Param
+2019/11/08 15:08:39 ZEBRA: Try to set TE Link Param
+2019/11/08 15:08:39 ZEBRA: Try to set TE Link Param
+2019/11/08 15:09:02 ZEBRA: Try to set TE Link Param
+2019/11/08 15:09:02 ZEBRA: Try to set TE Link Param
+2019/11/08 15:09:02 ZEBRA: Try to set TE Link Param
+2019/11/08 15:09:02 ZEBRA: Try to set TE Link Param
+2019/11/08 15:09:02 ZEBRA: Try to set TE Link Param
+2019/11/08 15:09:02 ZEBRA: Try to set TE Link Param
+2019/11/08 15:09:02 ZEBRA: Try to set TE Link Param
+2019/11/08 15:09:02 ZEBRA: Try to set TE Link Param
+2019/11/08 15:11:45 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:11:47 ZEBRA: client 14 says hello and bids fair to announce only bgp routes
+2019/11/08 15:11:47 ZEBRA: Try to set TE Link Param
+2019/11/08 15:11:47 ZEBRA: Try to set TE Link Param
+2019/11/08 15:11:47 ZEBRA: Try to set TE Link Param
+2019/11/08 15:11:47 ZEBRA: client 15 says hello and bids fair to announce only bgp routes
+2019/11/08 15:11:47 ZEBRA: sender of bgp routes changed ->
+2019/11/08 15:11:47 ZEBRA: Try to set TE Link Param
+2019/11/08 15:11:47 ZEBRA: Try to set TE Link Param
+2019/11/08 15:11:47 ZEBRA: Try to set TE Link Param
+2019/11/08 15:17:35 ZEBRA: Try to set TE Link Param
+2019/11/08 15:17:35 ZEBRA: Try to set TE Link Param
+2019/11/08 15:17:35 ZEBRA: Try to set TE Link Param
+2019/11/08 15:17:35 ZEBRA: Try to set TE Link Param
+2019/11/08 15:17:35 ZEBRA: Try to set TE Link Param
+2019/11/08 15:17:35 ZEBRA: Try to set TE Link Param
+2019/11/08 15:17:35 ZEBRA: Try to set TE Link Param
+2019/11/08 15:17:35 ZEBRA: Try to set TE Link Param
+2019/11/08 15:26:02 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:26:04 ZEBRA: client 14 says hello and bids fair to announce only bgp routes
+2019/11/08 15:26:04 ZEBRA: Try to set TE Link Param
+2019/11/08 15:26:04 ZEBRA: Try to set TE Link Param
+2019/11/08 15:26:04 ZEBRA: Try to set TE Link Param
+2019/11/08 15:26:04 ZEBRA: client 15 says hello and bids fair to announce only bgp routes
+2019/11/08 15:26:04 ZEBRA: sender of bgp routes changed ->
+2019/11/08 15:26:04 ZEBRA: Try to set TE Link Param
+2019/11/08 15:26:04 ZEBRA: Try to set TE Link Param
+2019/11/08 15:26:04 ZEBRA: Try to set TE Link Param
+2019/11/08 15:44:49 ZEBRA: Try to set TE Link Param
+2019/11/08 15:44:49 ZEBRA: Try to set TE Link Param
+2019/11/08 15:44:49 ZEBRA: Try to set TE Link Param
+2019/11/08 15:44:49 ZEBRA: Try to set TE Link Param
+2019/11/08 15:44:49 ZEBRA: Try to set TE Link Param
+2019/11/08 15:44:49 ZEBRA: Try to set TE Link Param
+2019/11/08 15:44:49 ZEBRA: Try to set TE Link Param
+2019/11/08 15:44:49 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:14 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:45:16 ZEBRA: client 14 says hello and bids fair to announce only bgp routes
+2019/11/08 15:45:16 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:16 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:16 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:16 ZEBRA: client 15 says hello and bids fair to announce only bgp routes
+2019/11/08 15:45:16 ZEBRA: sender of bgp routes changed ->
+2019/11/08 15:45:16 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:16 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:16 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:27 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:45:29 ZEBRA: client 14 says hello and bids fair to announce only bgp routes
+2019/11/08 15:45:29 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:29 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:29 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:29 ZEBRA: client 15 says hello and bids fair to announce only bgp routes
+2019/11/08 15:45:29 ZEBRA: sender of bgp routes changed ->
+2019/11/08 15:45:29 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:29 ZEBRA: Try to set TE Link Param
+2019/11/08 15:45:29 ZEBRA: Try to set TE Link Param
+2019/11/08 15:53:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:53:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:53:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:53:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:53:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:53:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:53:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:53:25 ZEBRA: Try to set TE Link Param
+2019/11/08 15:54:11 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 15:54:13 ZEBRA: client 14 says hello and bids fair to announce only bgp routes
+2019/11/08 15:54:13 ZEBRA: Try to set TE Link Param
+2019/11/08 15:54:13 ZEBRA: Try to set TE Link Param
+2019/11/08 15:54:13 ZEBRA: Try to set TE Link Param
+2019/11/08 15:54:13 ZEBRA: client 15 says hello and bids fair to announce only bgp routes
+2019/11/08 15:54:13 ZEBRA: sender of bgp routes changed ->
+2019/11/08 15:54:13 ZEBRA: Try to set TE Link Param
+2019/11/08 15:54:13 ZEBRA: Try to set TE Link Param
+2019/11/08 15:54:13 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:06 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:06 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:06 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:06 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:06 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:06 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:06 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:06 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:07 ZEBRA: Zebra 1.2.4 starting: vty@2601
+2019/11/08 16:10:09 ZEBRA: client 14 says hello and bids fair to announce only bgp routes
+2019/11/08 16:10:09 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:09 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:09 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:09 ZEBRA: client 15 says hello and bids fair to announce only bgp routes
+2019/11/08 16:10:09 ZEBRA: sender of bgp routes changed ->
+2019/11/08 16:10:09 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:09 ZEBRA: Try to set TE Link Param
+2019/11/08 16:10:09 ZEBRA: Try to set TE Link Param
+2019/11/08 16:16:36 ZEBRA: Try to set TE Link Param
+2019/11/08 16:16:36 ZEBRA: Try to set TE Link Param
+2019/11/08 16:16:36 ZEBRA: Try to set TE Link Param
+2019/11/08 16:16:36 ZEBRA: Try to set TE Link Param
+2019/11/08 16:16:36 ZEBRA: Try to set TE Link Param
+2019/11/08 16:16:36 ZEBRA: Try to set TE Link Param
+2019/11/08 16:16:36 ZEBRA: Try to set TE Link Param
+2019/11/08 16:16:36 ZEBRA: Try to set TE Link Param

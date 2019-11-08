@@ -1,6 +1,6 @@
 package net.floodlightcontroller.bgpsecx.update;
 
-import net.floodlightcontroller.bgpsecx.BGPSecX;
+import net.floodlightcontroller.bgpsecx.BGPSecXOld;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,23 +18,23 @@ public class BGPSecCacheRPKI {
      */
 	public static boolean getROAOnCache(String prefix, String asn, String ip) {
 		long nowTime = System.currentTimeMillis();
-		if (BGPSecX.getRPKICacheSize() == 0) { // Cache initialize 
-			BGPSecX.setROACache("TTL", String.valueOf(nowTime), "");
-			log.info("First query, Cache TTL was initialized: " + BGPSecX.getRPKICacheSize());
+		if (BGPSecXOld.getRPKICacheSize() == 0) { // Cache initialize 
+			BGPSecXOld.setROACache("TTL", String.valueOf(nowTime), "");
+			log.info("First query, Cache TTL was initialized: " + BGPSecXOld.getRPKICacheSize());
 			return false;
 	    } else { // Verify whether the cache is out of date. If yes, reinitialize.
-	    	String[] getTTL = BGPSecX.getRPKICacheValue("TTL");
+	    	String[] getTTL = BGPSecXOld.getRPKICacheValue("TTL");
 	    	long timeStamp = nowTime - Long.valueOf(getTTL[0].toString().replaceAll("[\\[\\]]",""));
 	    	if (timeStamp > TTL) {
-	    		BGPSecX.setRPKICacheClear();
-	    		BGPSecX.setROACache("TTL", String.valueOf(nowTime), "");
-	    		log.info("Cache TTL was REinitialized."+ BGPSecX.getRPKICacheSize());
+	    		BGPSecXOld.setRPKICacheClear();
+	    		BGPSecXOld.setROACache("TTL", String.valueOf(nowTime), "");
+	    		log.info("Cache TTL was REinitialized."+ BGPSecXOld.getRPKICacheSize());
 	    		return false;
 	    	}
 	    }			
 		// Querying whether ASN/Prefix exist in cache 
-		if (BGPSecX.getRPKICacheContains(prefix)){
-			String[] values = BGPSecX.getRPKICacheValue(prefix);
+		if (BGPSecXOld.getRPKICacheContains(prefix)){
+			String[] values = BGPSecXOld.getRPKICacheValue(prefix);
 			// Verify NLRI routes
 			if (ip.equals("") && asn.equals(values[0])) {
 				log.info("Quering CACHE for NLRI (" + asn + "/" + prefix + 
@@ -60,7 +60,7 @@ public class BGPSecCacheRPKI {
 	 * @return
 	 */
 	public static boolean setROAOnCache(String prefix, String asn, String ip) {
-		BGPSecX.setROACache(prefix, asn, ip);
+		BGPSecXOld.setROACache(prefix, asn, ip);
 		return true;
 	}
 }

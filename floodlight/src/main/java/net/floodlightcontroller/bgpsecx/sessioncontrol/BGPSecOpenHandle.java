@@ -1,27 +1,35 @@
 package net.floodlightcontroller.bgpsecx.sessioncontrol;
 
-import java.util.Arrays;
+/* 
+ * RFCs 
+ * 4271 (A Border Gateway Protocol 4 (BGP-4))
+ * 5492 (Capabilities Advertisement with BGP-4)
+ * 
+ */
 
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.floodlightcontroller.bgpsecx.BGPSecX;
+import net.floodlightcontroller.bgpsecx.BGPSecMain;
 import net.floodlightcontroller.bgpsecx.general.BGPSecDefs;
 import net.floodlightcontroller.bgpsecx.general.BGPSecUtils;
+import net.floodlightcontroller.bgpsecx.sessioncontrol.BGPSecClientHandle;
 
 public class BGPSecOpenHandle {
 	protected static Logger log = LoggerFactory.getLogger(BGPSecOpenHandle.class);
-
+	
 	public static StringBuilder MY_DEFAULT_OPEN_HEADER = new StringBuilder()
 						.append(BGPSecUtils.decToHexWithPad(BGPSecDefs.OPEN, 2))
-						.append(BGPSecUtils.bytesToHexString(BGPSecDefs.MY_BGP_VERSION))
+						.append(BGPSecUtils.bytesToHex(BGPSecDefs.MY_BGP_VERSION))
 						.append(BGPSecUtils.decToHexWithPad(BGPSecDefs.MY_ASN, 4))
 						.append(BGPSecUtils.decToHexWithPad(BGPSecDefs.DEFAULT_HOLD_TIME, 4))
 						.append(BGPSecDefs.MY_ID);
 	public static StringBuilder MY_OPEN_OPTIONAL_PARAM = new StringBuilder()
 						.append("1802060104000100010202800002020200020641040000fde9");
 	public static StringBuilder OPEN_MSG_TO_REPLY = new StringBuilder()
-						.append(BGPSecDefs.HEADER_MARKER_HEX).append(MY_DEFAULT_OPEN_HEADER)
+						.append(BGPSecDefs.HEADER_MARKER_HEX)
+						.append(MY_DEFAULT_OPEN_HEADER)
 						.append(MY_OPEN_OPTIONAL_PARAM);
 						//.append(BGPSecDefs.KEEPALIVE_MSG);
 	
@@ -36,30 +44,30 @@ public class BGPSecOpenHandle {
 	 */ 
 	public static byte[] checkMessage(byte[] msg){
 		int asn = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(msg, 4, 2));
-		String id = BGPSecUtils.bytesToHexString((BGPSecUtils.subByte(msg, 8, 4)));
+		String id = BGPSecUtils.bytesToHex((BGPSecUtils.subByte(msg, 8, 4)));
 		
 		/**
 		 *  Check whether the peer is authorized to keep a BGP session.
 		 *  This also is with compliance RFCXXX for ID equal to zero 
 		 *  because id stored in hastable ever will be different of zero.
 		 */
-		if (!BGPSecX.containsPeer(asn)){
-			log.debug("Error: AS don't have permission.");
+		if (!BGPSecMain.containsPeer(asn)){
+			log.info("Error: ASN " + asn + " is not a configured peer.");
 			return new byte[] {0x01};
-		} else if (!BGPSecX.getAuthPeersValue(asn).equals(id)){
-			log.debug("Error: AS don't have permission.");
+		} else if (!BGPSecMain.getAuthPeersValue(asn).equals(id)){
+			log.info("Error: ASN " + asn + " is a configured peer, but ID " + BGPSecUtils.ipHexToDec(id) + " not match.");
 				return new byte[] {0x01};
 		}
 		
-		// Check the length of message (17 are of the header mark and type message)
+		// Check the length of message (17 bytes are header mark and the type of message)
 		if ((msg.length + 17) < BGPSecDefs.MIN_MSG_LENGTH[BGPSecDefs.OPEN]){
-			log.debug("Error: message length is wrong.");
+			log.info("Error: message length is wrong.");
 			return new byte[] {0x02};
 		}
 
 		// Check whether BGP version is compatible	
 		if (!Arrays.equals(BGPSecUtils.subByte(msg, 3, 1), BGPSecDefs.MY_BGP_VERSION)){
-			log.debug("Error: version of BGP isn't compatible.");
+			log.info("Error: version of BGP isn't compatible.");
 			return new byte[] {0x03};
 		} 
 		
@@ -82,6 +90,19 @@ public class BGPSecOpenHandle {
 						.append(MY_DEFAULT_OPEN_HEADER)
 						.append(MY_OPEN_OPTIONAL_PARAM)
 						.append(BGPSecDefs.KEEPALIVE_MSG);
+		
+		if (BGPSecMain.sessionData.containsPeer(id)){
+			log.info("Há ID...........");
+		} else {
+			BGPSecClientHandle.setSessionPar("thread", 0);
+			BGPSecClientHandle.setSessionPar("asn", asn);
+			BGPSecClientHandle.setSessionPar("session_state", 0);
+			BGPSecClientHandle.setSessionPar("next_msg", BGPSecDefs.KEEPALIVE);
+			BGPSecClientHandle.setSessionPar("hold_timer", holdTime);
+			BGPSecClientHandle.setSessionPar("hold_time", System.currentTimeMillis()/1000);
+			BGPSecClientHandle.setSessionPar("msg_timeout", System.currentTimeMillis()/1000);
+			BGPSecMain.sessionData.setAllParameters(BGPSecClientHandle.getSessionPar(), BGPSecClientHandle.getClientIpAddr());	
+		}
 		
 		// There are not any errors in OPEN message. Reply with other OPEN + a concatenated KEEPALIVE
 		return BGPSecUtils.hexStrToByteArray(buildMsg.toString());

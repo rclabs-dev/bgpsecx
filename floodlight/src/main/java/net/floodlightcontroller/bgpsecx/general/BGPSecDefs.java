@@ -1,21 +1,21 @@
 package net.floodlightcontroller.bgpsecx.general;
 
 import org.projectfloodlight.openflow.types.IPv4Address;
-import org.projectfloodlight.openflow.types.MacAddress;
+//import org.projectfloodlight.openflow.types.MacAddress;
 
 import com.google.common.base.Strings;
 
 public class BGPSecDefs {
 	public final static String RPKI_URL = "http://localhost:8081/api/v1/validity/";
 	
-	public static final IPv4Address CONTROLLER_ADDR = IPv4Address.of("10.251.11.151"); 
-	public static final MacAddress CONTROLLER_MAC = MacAddress.of("06:94:25:95:d6:63");
+	public static final IPv4Address CONTROLLER_ADDR = IPv4Address.of("10.251.11.156"); 
+	//public static final MacAddress CONTROLLER_MAC = MacAddress.of("06:94:25:95:d6:63");
 
-	public static final String IP_TO_LISTEN = "0.0.0.0";
+	public static final String IP_TO_LISTEN = "127.0.0.1";
 	public static final int BGP_PORT = 2179;
 	public static final int SOCKET_QUEUE = 0;
 	public static final byte[] MY_BGP_VERSION = {0x04};
-	public static final int MY_ASN = 65001;
+	public static final int MY_ASN = 65000;
 	public static final String MY_ID = BGPSecUtils.ipDecToHex(IP_TO_LISTEN);
 	
 	public static final int DEFAULT_HOLD_TIME = 90;
@@ -66,12 +66,15 @@ public class BGPSecDefs {
     
 	
 	public static StringBuilder MY_DEFAULT_OPEN_HEADER = new StringBuilder()
-								.append(BGPSecUtils.decToHexWithPad(BGPSecDefs.OPEN, 2))
-								.append(BGPSecUtils.bytesToHexString(BGPSecDefs.MY_BGP_VERSION))
-								.append(BGPSecUtils.decToHexWithPad(BGPSecDefs.MY_ASN, 4))
-								.append(BGPSecUtils.decToHexWithPad(BGPSecDefs.DEFAULT_HOLD_TIME, 4))
+								.append(BGPSecUtils.decToHexWithPad(OPEN, 2))
+								.append(BGPSecUtils.bytesToHex(MY_BGP_VERSION))
+								.append(BGPSecUtils.decToHexWithPad(MY_ASN, 4))
+								.append(BGPSecUtils.decToHexWithPad(DEFAULT_HOLD_TIME, 4))
 								.append(BGPSecDefs.MY_ID);
 
 	public static StringBuilder MY_OPEN_OPTIONAL_PARAM = new StringBuilder()
 								.append("1802060104000100010202800002020200020641040000fde9");	
+	
+	// Customized messages
+	
 }
