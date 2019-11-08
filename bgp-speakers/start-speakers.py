@@ -9,8 +9,6 @@ import time
 import os
 
 class LinuxRouter( Node ):
-    "IP forwarding enabled."
-
     def config( self, **params ):
         super( LinuxRouter, self).config( **params )
         self.cmd( 'sysctl net.ipv4.ip_forward=1' )
@@ -21,8 +19,6 @@ class LinuxRouter( Node ):
 
 
 class NetworkTopo( Topo ):
-    "A LinuxRouter connecting three IP subnets"
-
     def build( self, **_opts ):
 
         ipR1 = '192.168.10.1/24'
@@ -37,14 +33,12 @@ class NetworkTopo( Topo ):
         h2 = self.addHost( 'h2', ip='192.168.11.2/24', defaultRoute='via 192.168.11.1',dpid='0000000000000002')
 
 
-	#self.addLink(router1,router2,intfName1='r1-eth1',intfName2='r2-eth1')
-	self.addLink(h1,router1,intfName1='r1-eth0')#params2 define the eth2 ip address
+	self.addLink(h1,router1,intfName1='r1-eth0')
 	self.addLink(h2,router2,intfName1='r2-eth0')
 	self.addLink(switch1,router1,intfName1='s1-eth0',intfName2='r1-eth1',params2={'ip':'10.10.10.1/24'})
         self.addLink(switch1,router2,intfName1='s1-eth1',intfName2='r2-eth1',params2={'ip':'10.10.10.2/24'})	
 
 def run():
-    "Test linux router"
     topo = NetworkTopo()
     net = Mininet(controller=RemoteController,topo=topo)
     c1 = net.addController('c1', ip='10.251.11.156', port=6653)
