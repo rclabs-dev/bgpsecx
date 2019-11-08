@@ -8,14 +8,14 @@ from mininet.cli import CLI
 import time
 import os
 
-class LinuxRouter( Node ):
+class BgpSecNetwork( Node ):
     def config( self, **params ):
-        super( LinuxRouter, self).config( **params )
+        super( BgpSecNetwork, self).config( **params )
         self.cmd( 'sysctl net.ipv4.ip_forward=1' )
 
     def terminate( self ):
         self.cmd( 'sysctl net.ipv4.ip_forward=0' )
-        super( LinuxRouter, self ).terminate()
+        super( BgpSecNetwork, self ).terminate()
 
 
 class NetworkTopo( Topo ):
@@ -23,8 +23,8 @@ class NetworkTopo( Topo ):
 
         ipR1 = '192.168.10.1/24'
         ipR2 = '192.168.11.1/24' 
-        router1 = self.addNode( 'r1', cls=LinuxRouter, ip=ipR1 )
-	router2 = self.addNode( 'r2', cls=LinuxRouter, ip=ipR2 )
+        router1 = self.addNode( 'r1', cls=BgpSecNetwork, ip=ipR1 )
+	router2 = self.addNode( 'r2', cls=BgpSecNetwork, ip=ipR2 )
 	switch1 = self.addSwitch('s1',dpid='1000000000000001')
 
 	
