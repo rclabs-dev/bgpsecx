@@ -14,8 +14,8 @@ import net.floodlightcontroller.bgpsecx.general.BGPSecUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BGPSecClientHandle extends BGPSecErrorCodes implements Runnable{
-	protected static Logger log = LoggerFactory.getLogger(BGPSecClientHandle.class);
+public class BGPSecClientFSMHandle extends BGPSecErrorCodes implements Runnable{
+	protected static Logger log = LoggerFactory.getLogger(BGPSecClientFSMHandle.class);
     protected Socket cltSocket = null;
     
 	/*
@@ -34,10 +34,20 @@ public class BGPSecClientHandle extends BGPSecErrorCodes implements Runnable{
 	private static HashMap<String , Object> sessionParameters  = new HashMap<String, Object>();
 	private static String srcIpAddr = null;
 
-    public BGPSecClientHandle(Socket cltSocket) {
+    public BGPSecClientFSMHandle(Socket cltSocket) {
         this.cltSocket = cltSocket;
     }
 
+    /* RFC4271, Message header format
+     * 0                   1                   2                   3
+          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+          
+          |                           Marker                              |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          |          Length               |      Type     |
+          +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     */
+    
     public void run() {
     	srcIpAddr = cltSocket.getInetAddress().getHostAddress();
     	DataOutputStream outData = null;
@@ -93,7 +103,7 @@ public class BGPSecClientHandle extends BGPSecErrorCodes implements Runnable{
     		        
     				switch (msgType) {	
 					case BGPSecDefs.OPEN:
-						returnData = BGPSecOpenHandle.checkMessage(data);
+						returnData = BGPSecOpenHandle.parseMsg(data);
 						// OPEN message ok, reply with local parameters
 						if (returnData.length > 3){
 							log.info("Reply OPEN message to " + srcIpAddr + 

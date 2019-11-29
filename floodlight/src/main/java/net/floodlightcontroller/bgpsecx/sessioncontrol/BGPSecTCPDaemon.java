@@ -38,7 +38,7 @@ public class BGPSecTCPDaemon implements Runnable{
                 throw new RuntimeException("Error accepting client connection", e);
             }
             new Thread(
-                new BGPSecClientHandle(clientSocket)
+                new BGPSecClientFSMHandle(clientSocket)
             ).start();
         }
         log.info("By admin, the BGP Server for speakers connection stopped.");
@@ -64,7 +64,7 @@ public class BGPSecTCPDaemon implements Runnable{
             		new ServerSocket(this.srvPort, 
             		this.socketQueue, InetAddress.getByName(this.srvIPAddr));
             log.info("BGP daemon was started and listening on address " + this.srvIPAddr + ":" + this.srvPort 
-            		 + ", and " + BGPSecDefs.MY_ASN + " as main ASN.");
+            		 + ", and " + BGPSecDefs.MY_ASN_16 + " as main ASN.");
         } catch (IOException | NullPointerException e) {
             throw new RuntimeException("Cannot binding BGP port (on " + srvIPAddr + "/" + srvPort + ")", e);
         }

@@ -18,22 +18,22 @@ public class BGPSecNotificationHandle extends BGPSecErrorCodes {
         	notifyData = BGPSecUtils.bytesToHex(BGPSecUtils.subByte(msg, 5));
         }
         
-        log.debug("Notification CODE: " + code + ", SUBCODE: " + subcode +
-        		  "DATA_ERROR: " + notifyData);
+        log.info("Notification CODE: " + code + ", SUBCODE: " + subcode +
+        		  ", DATA_ERROR: " + notifyData);
         
         switch (code) {	
 		case HEADER_ERROR:
-			log.debug("Received a notification for HEADER ERROR, SUBCODE: " + 
+			log.info("Received a notification for HEADER ERROR, SUBCODE: " + 
 					  SUBCODE_HEADER_MSG[subcode - 1] + ", DATA: " + notifyData);
 			break;
 			
 		case OPEN_ERROR:
-			log.debug("Received a notification for OPEN ERROR, SUBCODE: " + 
+			log.info("Received a notification for OPEN Message Error, SUBCODE: " + 
 					  SUBCODE_OPEN_MSG[subcode - 1] + ", DATA: " + notifyData);
 			break;        
 
 		case UPDATE_ERROR:
-			log.debug("Received a notification for UPDATE ERROR, SUBCODE: " + 
+			log.info("Received a notification for UPDATE ERROR, SUBCODE: " + 
 					  SUBCODE_OPEN_MSG[subcode - 1] + ", DATA: " + notifyData);
 			break;        
 
@@ -42,11 +42,11 @@ public class BGPSecNotificationHandle extends BGPSecErrorCodes {
 			break;        
 
 		case FSM_ERROR:
-			log.debug("Received a notification for FSM ERROR"); 
+			log.info("Received a notification for FSM ERROR"); 
 			break;        
 
 		case CEASE:
-			log.debug("Received a notification for CEASE"); 			
+			log.info("Received a notification for CEASE"); 			
 			break;        
 
         }

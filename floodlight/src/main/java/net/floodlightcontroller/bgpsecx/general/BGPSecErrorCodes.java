@@ -22,6 +22,8 @@ public class BGPSecErrorCodes {
 	public static final byte OPEN_SUB_UNSUPPORTED_PARAMETER = 4;
 	public static final byte OPEN_SUB_AUTH_FAIL = 5;
 	public static final byte OPEN_SUB_UNSUPPORTED_HOLDTIME = 6;
+	// Define by rfc5492
+	public static final byte OPEN_SUB_UNSUPPORTED_CAPABILITY = 7;
 	
 	// Code errors for UPDATE message
 	public static final byte UPDATE_ERROR = 3;
@@ -47,8 +49,8 @@ public class BGPSecErrorCodes {
 	public static final byte CEASE = 6;
     	
 	public static final String[] SUBCODE_HEADER_MSG = {"UNSYNC", "BAD_MSG_LENGTH", "BAD_MSG_TYPE"};
-	public static final String[] SUBCODE_OPEN_MSG = {"UNSUPPORTED_VERSION", "BAD_AS", "BAD_ID",
-			 										 "UNSUPPORTED_PARAMETER", "AUTH_FAIL", "UNSUPPORTED_HOLDTIME"};
+	public static final String[] SUBCODE_OPEN_MSG = {"Unsupporte Version Number", "Bad Peer AS", "Bad BGP Identifier",
+			 										 "Unsupported Optional Parameter", "AUTH_FAIL", "Unacceptable Hold Time"};
 	public static final String[] SUBCODE_UPDATE_MSG = {"MALFORMED_ATTR", "UNRECO_WELLKNOWN_ATTR", "MISSING_WELLKNOWN_ATTR",
 			 										  "ATTR_FLAG_ERROR", "ATTR_LENGTH_ERROR", "INVALID_ORIGIN_ATTR",
 			 										  "AS_ROUTE_LOOP", "INVALID_NEXHOP_ATTR", "OPTIONAL_ATTR_ERROR",

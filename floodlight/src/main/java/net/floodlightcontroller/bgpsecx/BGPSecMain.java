@@ -1965,12 +1965,16 @@ public class BGPSecMain extends ForwardingBase implements IFloodlightModule, IOF
 		return rpkiCacheMap.containsKey(prefix);
 	}
 
-	public static String getAuthPeersValue(Integer asn){
+	public static String getAuthPeersId(Integer asn){
 		return authPeers.get(asn);
 	}
 
 	public static boolean containsPeer(Integer asn){
 		return authPeers.containsKey(asn);
+	}
+	
+	public static int getTotalAuthPeers() {
+		return authPeers.size();
 	}
 
 }
