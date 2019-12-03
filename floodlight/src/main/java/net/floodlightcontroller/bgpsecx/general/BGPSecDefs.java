@@ -59,9 +59,11 @@ public class BGPSecDefs {
 													 "AS_ROUTE_LOOP", "INV_NHOP_ATTR", "OPT_ATTR_ERR",
 													 "INV_NET_FIELD", "MALFORMED_AS_PATH"};
 
-	// Values for Open, Update, Notification and Keepalive
+	// Maximum lenght values for Open, Update, Notification and Keepalive messages
 	public static final int[] MIN_MSG_LENGTH = {29,23,21,19}; 
 	public static final int MAX_LENGTH_MSG = 4096;
+	public static final int MAX_LENGTH_EMSG = 65535;
+	
 	public static final String HEADER_MARKER_HEX = Strings.repeat("ffff", 8);
 	public static final byte[] HEADER_MARKER = BGPSecUtils.hexStrToByteArray(Strings.repeat("ffff", 8));
 	public static final StringBuilder KEEPALIVE_MSG = new StringBuilder()
@@ -76,19 +78,19 @@ public class BGPSecDefs {
 								.append(BGPSecDefs.MY_ID);
 
 	public static StringBuilder MY_OPEN_OPTIONAL_PARAM = new StringBuilder()
-								.append("1802060104000100010202800002020200020641040000fde9");	
+								.append("1802060104000100010202800002020200020641040000fde8");	
 	
-	public static HashMap<Integer, String> optCapCodes = new HashMap<Integer, String>();
+	public static final HashMap<Integer, String> optCapCodes = new HashMap<Integer, String>();
 	
 	/* 
 	 * Optional Capabilities Codes for Open Message
 	 0	Reserved	[RFC5492]
 	 1	Multiprotocol Extensions for BGP-4	[RFC2858]
-	 2	Route Refresh Capability for BGP-4	[RFC2918]
+	 2	Route Refresh Capability for BGP-4	[RFC2918], length 0
 	 3	Outbound Route Filtering Capability	[RFC5291]
 	 4	Multiple routes to a destination capability (deprecated)	[RFC8277]
 	 5	Extended Next Hop Encoding	[RFC5549]
-	 6	BGP Extended Message	[RFC8654]
+	 6	BGP Extended Message	[RFC8654], lenght 0
 	 7	BGPsec Capability	[RFC8205]
 	 8	Multiple Labels Capability	[RFC8277]
 	 9	BGP Role (TEMPORARY - registered 2018-03-29, extension registered 2019-03-18, expires 2020-03-29)	[draft-ietf-idr-bgp-open-policy]
@@ -130,8 +132,4 @@ public class BGPSecDefs {
 		optCapCodes.put(71, "Long-Lived Graceful Restart (LLGR) Capability");
 		optCapCodes.put(73, "FQDN Capability	[draft-walton-bgp-hostname-capability]");		
 	}
-
-										
-	
-	
 }

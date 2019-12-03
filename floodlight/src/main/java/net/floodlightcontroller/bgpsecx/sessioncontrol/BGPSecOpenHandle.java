@@ -8,6 +8,8 @@ package net.floodlightcontroller.bgpsecx.sessioncontrol;
  */
 
 import java.util.Arrays;
+import java.util.HashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,8 @@ import net.floodlightcontroller.bgpsecx.sessioncontrol.BGPSecClientFSMHandle;
 public class BGPSecOpenHandle {
 	protected static Logger log = LoggerFactory.getLogger(BGPSecOpenHandle.class);
 	
+	public static BGPSecDefs bgpDefs = new BGPSecDefs();
+	
 	public static StringBuilder MY_DEFAULT_OPEN_HEADER = new StringBuilder()
 						.append(BGPSecUtils.decToHexWithPad(BGPSecDefs.OPEN, 2))
 						.append(BGPSecUtils.bytesToHex(BGPSecDefs.MY_BGP_VERSION))
@@ -55,7 +59,7 @@ public class BGPSecOpenHandle {
 	*/
 	
 	public static StringBuilder MY_OPEN_OPTIONAL_PARAM = new StringBuilder()
-						.append("1802060104000100010202800002020200020641040000fde9");
+						.append("1802060104000100010202800002020200020641040000fde8");
 	public static StringBuilder OPEN_MSG_TO_REPLY = new StringBuilder()
 						.append(BGPSecDefs.HEADER_MARKER_HEX)
 						.append(MY_DEFAULT_OPEN_HEADER)
@@ -111,8 +115,9 @@ public class BGPSecOpenHandle {
 		}
 
 		int optParamLen = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(msg, 12, 1));
-		
-		log.info("OPEN message info: Optional Parameters (Capabilities) Lenght: " + optParamLen);
+		byte[] optParam =  BGPSecUtils.subByte(msg, 13);
+		log.info("OPEN message info: Optional Parameters (Capabilities) Lenght: " + optParamLen + ", content: " + BGPSecUtils.bytesToHex(optParam));
+		parseCapabilities(optParamLen, optParam, rmtPeerAsn);
 		
 		/*
 		 * Calculates the total message length (18 is value 
@@ -142,5 +147,32 @@ public class BGPSecOpenHandle {
 		
 		// There are not any errors in OPEN message. Reply with other OPEN + a concatenated KEEPALIVE
 		return BGPSecUtils.hexStrToByteArray(buildMsg.toString());
+	}
+
+	@SuppressWarnings("static-access")
+	public static void parseCapabilities(int optParamLen, byte[] optParam, int peer) {
+		int count = 1;
+		int newCap;
+		String capValue = null;
+		while (count < optParamLen) {
+			int parLen = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(optParam, count, 1));
+			count++;
+			newCap = count;
+			while (count < (newCap + parLen)) {
+				int capType = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(optParam, count, 1));
+				count++;
+				int capLen = BGPSecUtils.bytesToInt(BGPSecUtils.subByte(optParam, count, 1));
+				count++;
+				//System.out.println("count: " + count + ", parLen: " + parLen + ", capType: " + capType +", capLen: " + capLen);
+				if (capLen != 0) {
+					capValue = BGPSecUtils.bytesToHex(BGPSecUtils.subByte(optParam, count, capLen));
+				} 
+				if (bgpDefs.optCapCodes.containsKey(capType)) {
+					log.info("New CAPABILITY type for peer " + peer + " is: " + bgpDefs.optCapCodes.get(capType) + ", and value is: " + capValue);
+				}
+				count += capLen + 1;
+			}
+		}
+							
 	}
 }
