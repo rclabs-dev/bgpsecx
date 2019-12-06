@@ -2,7 +2,7 @@
 
 from mininet.topo import Topo
 from mininet.net import Mininet
-from mininet.node import Node, Controller, OVSSwitch, OVSController
+from mininet.node import Node, Controller, OVSSwitch, OVSController, RemoteController
 from mininet.log import setLogLevel, info
 from mininet.cli import CLI
 from mininet.link import Intf, Link
@@ -29,28 +29,32 @@ class NetworkTopo( Topo ):
 	#router2 = self.addNode( 'r2', cls=BgpSecNetwork, ip=ipR2 )
 	sw1 = self.addSwitch('sw1',dpid='1000000000000001')
 
-        h1 = self.addHost( 'h1', ip='192.168.10.2/24', defaultRoute='via 192.168.10.1',dpid='0000000000000001')
-        h2 = self.addHost( 'h2', ip='192.168.10.3/24', defaultRoute='via 192.168.10.1',dpid='0000000000000002')
+        h1 = self.addHost( 'h1', ip='10.251.11.157/24', defaultRoute='via 10.251.11.156',dpid='0000000000000001')
+        h2 = self.addHost( 'h2', ip='10.251.11.158/24', defaultRoute='via 10.251.11.156',dpid='0000000000000002')
+	h3 = self.addHost( 'h3', ip='10.251.11.159/24', defaultRoute='via 10.251.11.156',dpid='0000000000000003')
+	h4 = self.addHost( 'h4', ip='10.251.11.160/24', defaultRoute='via 10.251.11.156',dpid='0000000000000004')
 	#self.addLink(h1,router1,intfName1='r1-eth0')
 	self.addLink(h1,sw1,intfName1='eth0')
 	self.addLink(h2,sw1,intfName1='eth0')
+	self.addLink(h3,sw1,intfName1='eth0')
+	self.addLink(h4,sw1,intfName1='eth0')
 	#self.addLink(switch1,router1,intfName1='s1-eth0',intfName2='r1-eth1',params2={'ip':'10.10.10.1/24'})
         #self.addLink(switch1,router2,intfName1='s1-eth1',intfName2='r2-eth1',params2={'ip':'10.10.10.2/24'})	
         #self.addLink( self, 'sw1', cls='BgpSecNetwork', intfName1='s1-eth3' )
 	#intfName = 'bgp-65001'
     	#info( 'Adding hardware interface to switch', '\n' )
     	#_intf = Intf( intfName, node=sw1 )
-        c0 = Controller( 'c0', port=6633 )
+        #c0 = Controller( 'c0', port=6633 )
 
 def run():
     topo = NetworkTopo()
-    net = Mininet(topo=topo)
-    #net = Mininet(controller=RemoteController,topo=topo)
-    #c1 = net.addController('c1', ip='10.251.11.156', port=6653)
+    #net = Mininet(topo=topo)
+    net = Mininet(controller=lambda name: RemoteController( name, ip='10.251.11.156' ), switch=OVSSwitch,topo=topo)
+    #c1 = net.addController('c0', ip='10.251.11.156', port=6653)
     #net.addController('c0')
     #switch = net.h1   
-    switch = net.switches[ 0 ]   
-    _intf = Intf( 'veth0', node=switch )
+    #switch = net.switches[ 0 ]   
+    #_intf = Intf( 'veth0', node=switch )
     net.start()
     info( 'Initial routing table on router:\n' )
     #info( net[ 'r1' ].cmd( 'route' ) )

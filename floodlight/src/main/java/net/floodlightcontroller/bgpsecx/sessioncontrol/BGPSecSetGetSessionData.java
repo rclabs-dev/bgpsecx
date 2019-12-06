@@ -10,7 +10,7 @@ public class BGPSecSetGetSessionData {
 
 	/**
 	 *  sessionData an innerSessionData stores all data for BGP FSM
-	 *  The key for external hashmap is the IP address 
+	 *  External hashmap is the IP address 
 	 */
 	private HashMap<String, HashMap<String, Object>> sessionData  = 
 			       	new HashMap<String, HashMap<String, Object>>();

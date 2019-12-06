@@ -3,7 +3,13 @@ package net.floodlightcontroller.bgpsecx.sessioncontrol;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.Temporal;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 
 import net.floodlightcontroller.bgpsecx.BGPSecMain;
@@ -17,6 +23,8 @@ import org.slf4j.LoggerFactory;
 public class BGPSecClientFSMHandle extends BGPSecErrorCodes implements Runnable{
 	protected static Logger log = LoggerFactory.getLogger(BGPSecClientFSMHandle.class);
     protected Socket cltSocket = null;
+    public static Date date = new Date();
+    SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy hh:mm:ss");
     
 	/*
 	 * Session data parameters
@@ -53,7 +61,8 @@ public class BGPSecClientFSMHandle extends BGPSecErrorCodes implements Runnable{
     	srcIpAddr = cltSocket.getInetAddress().getHostAddress();
     	DataOutputStream outData = null;
     	int msgType = 0;
-    	log.info("Started new session with peer " + srcIpAddr);
+    	long timeNow;
+    	log.info("Started new TCP session with peer " + srcIpAddr);
     	try {
     		outData = new DataOutputStream(cltSocket.getOutputStream());
     		int count;
@@ -138,22 +147,24 @@ public class BGPSecClientFSMHandle extends BGPSecErrorCodes implements Runnable{
 						          sessionParameters.get("hold_time") + "," +
 						          sessionParameters.get("msg_timeout")); */
 			
-				        long a = (System.currentTimeMillis()/1000) - (Long) sessionParameters.get("hold_time");
-				        log.info("Hold Time diference: " + a);		
-						
+				        long holdDiff = (System.currentTimeMillis()/1000) - (Long) sessionParameters.get("hold_time");
+				        log.info("Hold Time diference: " + holdDiff);		
+						timeNow = System.currentTimeMillis();
 						if ((Integer)sessionParameters.get("session_state") == 0){
-							sessionParameters.replace("session_state", 1);
-							sessionParameters.replace("next_msg", 0);
-							sessionParameters.replace("hold_time", System.currentTimeMillis()/1000);
-							sessionParameters.replace("msg_timeout", System.currentTimeMillis()/1000);
+							sessionParameters.put("session_state", 1);
+							sessionParameters.put("next_msg", 0);
+							sessionParameters.put("hold_time", System.currentTimeMillis()/1000);
+							sessionParameters.put("msg_timeout", System.currentTimeMillis()/1000);
+							sessionParameters.put("start_session", new Date());
 							BGPSecMain.sessionData.replaceAllParameters(sessionParameters, srcIpAddr);
 							log.info("BGP Session with peer " + srcIpAddr + " was established!");	
 						} else{
 							sessionParameters.replace("hold_time", System.currentTimeMillis()/1000);
+							sessionParameters.replace("uptime", timeNow);
 							BGPSecMain.sessionData.replaceAllParameters(sessionParameters, srcIpAddr);
 						}
-						
-						log.info("Reply KEEPALIVE Message to " + srcIpAddr);
+						log.info("Reply KEEPALIVE Message to " + srcIpAddr + ", uptime: " + 
+								BGPSecUtils.getUptime((Date)sessionParameters.get("start_session"), new Date()));
 						outData.write(BGPSecUtils.hexStrToByteArray(BGPSecDefs.KEEPALIVE_MSG.toString()));						
 						break;
 						

@@ -1,6 +1,7 @@
 package net.floodlightcontroller.bgpsecx.general;
 
 import java.nio.ByteBuffer;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -244,5 +245,22 @@ public class BGPSecUtils {
 		
 		public static String decToHexWithPad(Integer num, Integer padLimit) {
 			return String.format("%0" + padLimit + "x", num);
+		}
+		
+		public static String getUptime(Date startDate, Date endDate){
+			long diff = endDate.getTime() - startDate.getTime();
+			long milliseconds = 1000;
+			long minutes = milliseconds * 60;
+			long hours = minutes * 60;
+			long days = hours * 24;
+			long elapsedDays = diff / days;
+			diff = diff % days;
+			long elapsedHours = diff / hours;
+			diff = diff % hours;
+			long elapsedMinutes = diff / minutes;
+			diff = diff % minutes;			
+			long elapsedSeconds = diff / milliseconds;		
+			return ("Days " +   elapsedDays + ", Hours " + elapsedHours +  ", Minutes " + elapsedMinutes + ", Seconds " + elapsedSeconds);
+		
 		}
 }
