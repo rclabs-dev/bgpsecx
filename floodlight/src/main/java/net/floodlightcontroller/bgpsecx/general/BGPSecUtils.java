@@ -1,9 +1,14 @@
 package net.floodlightcontroller.bgpsecx.general;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 public class BGPSecUtils {
 
@@ -201,11 +206,22 @@ public class BGPSecUtils {
 			 * @return
 			 */		 
 		public static String ipDecToHex(String ip) {
-			 long result = 0;
-			 String[] octects = ip.split("\\.");
-			 for (int i = 3; i >= 0; i--)
-				 result |= (Long.parseLong(octects[3 - i]) << (i * 8));
-			 return Long.toHexString(result & 0xFFFFFFFF);
+			String hex = "";
+			String[] part = ip.split("[\\.,]");
+			if (part.length < 4) {
+				return "00000000";
+			}
+			for (int i = 0; i < 4; i++) {
+				int decimal = Integer.parseInt(part[i]);
+				if (decimal < 16) // Append a 0 to maintian 2 digits for every
+									// number
+				{
+					hex += "0" + String.format("%01X", decimal);
+				} else {
+					hex += String.format("%01X", decimal);
+				}
+			}
+			return hex;
 		 }
 
 		/**
@@ -222,15 +238,22 @@ public class BGPSecUtils {
 		 * @param ip
 		 * @return
 		 */				
-		public static byte[] hexStrToByteArray(String s) {
+	/*	public static byte[] hexStrToByteArray(String s) {
+			System.out.print("HEX TO BYTE: " +  s);
 		    byte data[] = new byte[s.length()/2];
 		    for(int i=0;i < s.length();i+=2) {
 		        data[i/2] = (Integer.decode("0x"+s.charAt(i)+s.charAt(i+1))).byteValue();
 		    }
 		    return data;
 		}
+*/		
+		public static byte[] hexStrToByteArray(String hexString) {
+		     HexBinaryAdapter adapter = new HexBinaryAdapter();
+		     byte[] bytes = adapter.unmarshal(hexString);
+		     return bytes;
+		}
 		
-		static public byte[] cloneArray(byte[] byteValue) {
+		public static byte[] cloneArray(byte[] byteValue) {
 			    byte[] b = new byte[byteValue.length];
 			    System.arraycopy(byteValue, 0, b, 0, byteValue.length);
 			    return b;

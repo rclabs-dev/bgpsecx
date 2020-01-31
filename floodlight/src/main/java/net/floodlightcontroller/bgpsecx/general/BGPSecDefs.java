@@ -13,7 +13,7 @@ public class BGPSecDefs {
 	public static final IPv4Address CONTROLLER_ADDR = IPv4Address.of("10.251.11.156"); 
 	//public static final MacAddress CONTROLLER_MAC = MacAddress.of("06:94:25:95:d6:63");
 
-	public static final String IP_TO_LISTEN = "127.0.0.1";
+	public static final String IP_TO_LISTEN = "10.251.11.156";
 	public static final int BGP_PORT = 2179;
 	public static final int SOCKET_QUEUE = 0;
 	public static final byte[] MY_BGP_VERSION = {0x04};
